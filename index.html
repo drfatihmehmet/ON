@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Klinik Simülasyon — Sahne 01</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="style.css">
+<script type="importmap">{ "imports": { "three": "./vendor/three.module.js" } }</script>
+</head>
+<body>
+<a class="skip" href="#panel">Soru paneline geç</a>
+<main class="app">
+  <section class="stage" aria-labelledby="sahne-baslik">
+    <header class="stage-head">
+      <p class="eyebrow">Klinik simülasyon</p>
+      <h1 id="sahne-baslik"></h1>
+      <p class="gorev" id="gorev"></p>
+    </header>
+
+    <div class="frame" id="frame">
+      <div class="viewport">
+      <video id="bekleme" muted loop playsinline preload="auto" disablepictureinpicture aria-hidden="true"></video>
+      <video id="hasta" muted playsinline preload="auto" disablepictureinpicture
+             aria-label="Hasta, önden görünüm"></video>
+      <img id="yedek" alt="Hasta, önden görünüm" hidden>
+      <p class="frame-empty" id="bos" hidden>Hasta görüntüsü yüklenemedi. Öykü almaya yine de devam edebilirsiniz.</p>
+      </div>
+      <aside class="basvuru" aria-label="Başvuru kartı">
+        <p class="b-yer"></p>
+        <p class="b-hasta"></p>
+        <p class="b-soz"></p>
+      </aside>
+    </div>
+
+    <div class="actions">
+      <button type="button" class="btn" id="btn-vr" hidden>VR’ye gir</button>
+      <p class="status" id="status" role="status" aria-live="polite"></p>
+    </div>
+  </section>
+
+  <section class="panel" id="panel" aria-labelledby="panel-baslik" tabindex="-1">
+    <h2 id="panel-baslik">Hastaya soru sor</h2>
+    <p class="lock" id="lock" hidden></p>
+
+    <div class="panel-body" id="panel-body">
+      <p class="hint">Soruları istediğiniz sırayla seçin. <span class="kbd">1</span>–<span class="kbd">6</span> tuşları da çalışır.</p>
+      <ol class="qlist" id="qlist"></ol>
+
+      <div class="answer" id="answer" aria-live="polite" aria-atomic="true">
+        <p class="a-empty">Henüz bir soru seçilmedi.</p>
+      </div>
+
+      <div class="tools">
+        <button type="button" class="btn ghost" id="btn-notes" aria-expanded="false" aria-controls="notes">
+          Öykü notları <span class="count" id="notes-count"></span>
+        </button>
+        <button type="button" class="btn ghost" id="btn-teach" aria-expanded="false" aria-controls="teach" hidden>
+          Eğitici not
+        </button>
+      </div>
+
+      <div class="disclosure" id="notes" hidden></div>
+      <div class="disclosure teach" id="teach" hidden></div>
+
+      <div class="finish">
+        <button type="button" class="btn primary" id="btn-finish" disabled aria-describedby="finish-hint">Öyküyü tamamla</button>
+        <p class="hint" id="finish-hint"></p>
+      </div>
+      <div class="summary" id="summary" aria-live="polite" hidden></div>
+    </div>
+  </section>
+</main>
+
+<div class="vr-onizleme" id="vr-onizleme" hidden>
+  <button type="button" class="btn" id="vr-onizleme-kapat">Önizlemeyi kapat</button>
+</div>
+
+<script type="module" src="src/main.js"></script>
+</body>
+</html>

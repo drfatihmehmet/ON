@@ -1,0 +1,10 @@
+{
+  "name": "sahne01-acil-servis",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node serve.mjs 8080",
+    "test": "node tests/state.test.mjs"
+  }
+}

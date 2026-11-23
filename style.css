@@ -1,0 +1,101 @@
+:root{
+  --black:#000; --navy:#002060; --blue:#0070C0; --red:#C00000;
+  --text:#fff; --muted:#c9d1de; --dim:#8f9bb0; --ok:#2e9d5b; --warn:#d99a00; --focus:#7cc4ff;
+  --card:#0b1428; --line:#22345c;
+  font-family: "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;background:var(--black);color:var(--text);min-height:100%}
+body{font-size:17px;line-height:1.5}
+.skip{position:absolute;left:-999px;top:0;background:var(--focus);color:#000;padding:.5rem 1rem;z-index:10}
+.skip:focus{left:0}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+
+.app{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(360px,1fr);gap:1.25rem;padding:1rem;max-width:1600px;margin:0 auto;align-items:start}
+.eyebrow{margin:0;color:var(--blue);font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:.8rem}
+h1{margin:.1rem 0 .3rem;font-size:1.45rem;line-height:1.2}
+h2{margin:0 0 .5rem;font-size:1.25rem}
+.gorev{margin:0 0 .75rem;color:var(--muted);max-width:60ch}
+
+/* Sahne: hasta 16:9 videonun ortasında; 4:3 kadraj yan boşlukları keser, kafa ve ayakkabı kadrajda kalır */
+.frame{position:relative;width:min(100%, calc((100dvh - 8.5rem) * 4 / 3));margin:0 auto}
+.viewport{position:relative;overflow:hidden;background:#000;border:1px solid var(--line);border-radius:12px;aspect-ratio:4/3}
+.viewport video,.viewport img{position:absolute;top:0;left:-16.667%;width:133.334%;height:100%;object-fit:contain;background:#000;display:block}
+.frame-empty{position:absolute;inset:auto 1rem 1rem 1rem;margin:0;color:var(--muted);text-align:center}
+.basvuru{position:absolute;left:3%;top:4%;width:28%;min-width:150px;padding:.7rem .8rem;background:rgba(11,20,40,.92);
+  border:1px solid var(--line);border-left:4px solid var(--red);border-radius:8px;font-size:.88rem}
+.basvuru p{margin:0}
+.b-yer{color:var(--focus);font-weight:700;font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;margin-bottom:.25rem!important}
+.b-hasta{font-weight:600}
+.b-soz{margin-top:.3rem!important;font-style:italic;color:var(--muted)}
+
+.actions{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;justify-content:center;margin:.75rem 0 0}
+.status{margin:0;color:var(--muted);font-size:.92rem;min-height:1.4em}
+
+.btn{font:inherit;font-weight:600;color:var(--text);background:var(--navy);border:1px solid var(--blue);border-radius:8px;
+  padding:.65rem 1rem;cursor:pointer;min-height:44px}
+.btn:hover:not(:disabled){background:#0a3a8a}
+.btn.primary{background:var(--red);border-color:#e04040}
+.btn.primary:hover:not(:disabled){background:#d81818}
+.btn.ghost{background:transparent}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+
+.panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:1rem;outline:none}
+.lock{color:var(--muted);margin:.25rem 0}
+.hint{margin:.2rem 0 .6rem;color:var(--dim);font-size:.88rem}
+.kbd{display:inline-block;min-width:1.4em;text-align:center;border:1px solid var(--dim);border-radius:4px;padding:0 .25em;font-size:.8rem;color:var(--muted)}
+
+.qlist{list-style:none;margin:0;padding:0;display:grid;gap:.5rem}
+.q{width:100%;display:flex;gap:.7rem;align-items:flex-start;text-align:left;font:inherit;color:var(--text);
+  background:#0e1c3a;border:1px solid var(--line);border-radius:8px;padding:.7rem .8rem;cursor:pointer;min-height:48px}
+.q:hover{border-color:var(--blue);background:#12265a}
+.q .num{flex:none;width:1.7rem;height:1.7rem;border-radius:50%;display:grid;place-items:center;background:var(--navy);border:1px solid var(--blue);font-weight:700;font-size:.85rem}
+.q .mark{margin-left:auto;flex:none;color:var(--ok);font-weight:700;white-space:nowrap}
+.q.asked{border-color:#2a5a40}
+.q.asked .num{background:var(--ok);border-color:var(--ok)}
+.q.current{border-color:var(--focus);box-shadow:0 0 0 1px var(--focus) inset}
+
+.answer{margin:1rem 0 .5rem;padding:1rem 1.1rem;background:#fff;color:#101828;border-radius:10px;min-height:5.5rem}
+.answer .a-label{margin:0 0 .35rem;font-size:.75rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#4a5a78}
+.answer .a-q{margin:0 0 .5rem;font-size:.92rem;color:#4a5a78}
+.answer blockquote{margin:0;font-size:1.25rem;line-height:1.45;font-weight:600}
+.answer .a-empty{margin:0;color:#4a5a78}
+
+.tools{display:flex;gap:.5rem;flex-wrap:wrap;margin:.6rem 0}
+.count{margin-left:.35rem;color:var(--focus)}
+.disclosure{border:1px solid var(--line);border-radius:10px;padding:.8rem 1rem;margin:.4rem 0;background:#0e1c3a}
+.disclosure h3{margin:.2rem 0 .4rem;font-size:.82rem;color:var(--focus);text-transform:uppercase;letter-spacing:.06em}
+.disclosure ul{margin:0 0 .4rem;padding:0;list-style:none}
+.disclosure li{padding:.35rem 0;border-top:1px solid var(--line)}
+.disclosure li:first-child{border-top:0}
+.disclosure .tl b,.disclosure .fk b{color:var(--text)}
+.disclosure .tl{display:grid;grid-template-columns:8.5rem 1fr;gap:.6rem}
+.disclosure .tl b{color:var(--warn)}
+.disclosure .empty{color:var(--dim);margin:0}
+.disclosure.teach{border-color:var(--warn);background:#201a08}
+.disclosure.teach p{margin:0}
+
+.finish{margin-top:1rem}
+.summary{margin-top:.8rem;padding:1rem;border:1px solid var(--ok);border-radius:10px;background:#0a1d14}
+.summary h3{margin:0 0 .4rem;font-size:.95rem;color:#7fe0a8}
+.summary p{margin:0 0 .8rem}
+.summary .next{margin:0;padding-top:.7rem;border-top:1px solid #1f4a35;font-weight:700;color:var(--focus)}
+
+.vr-onizleme{position:fixed;inset:0;background:#000;z-index:20}
+.vr-onizleme canvas{width:100%;height:100%;display:block}
+.vr-onizleme .btn{position:absolute;top:.6rem;right:.6rem;z-index:2}
+
+@media (max-width:900px){
+  .app{grid-template-columns:1fr;padding:.6rem}
+  .frame{width:100%}
+  /* dar ekranda kart hastanın yüzünü kapatmasın diye görüntünün altına alınır */
+  .basvuru{position:static;width:auto;margin:.6rem 0 0}
+}
+
+.answer .theory{margin-top:.8rem;padding:.7rem .8rem;background:#eef3fb;border-left:4px solid var(--blue);border-radius:6px}
+.answer .theory p{margin:0;font-size:.95rem;line-height:1.5;color:#1c2a44}
+.answer .t-label{font-size:.72rem!important;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--blue)!important;margin-bottom:.25rem!important}
+.answer .dx{margin:.2rem 0 0;padding-left:1.1rem;font-size:.98rem;line-height:1.45}
+.answer .dx li{margin:.35rem 0}
+.q.ek{border-style:dashed}
