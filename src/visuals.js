@@ -164,3 +164,42 @@ export function drawVisual(g, w, h, v, data) {
   else if (v.kind === 'fundus') fundus(g, w, h, data);
   g.restore();
 }
+
+// ---- Sahne 03: OKB öğretici şeması (Serum | BOS sütunları) ----
+const OKB_BANDS = {
+  1: { serum: [], bos: [] },
+  2: { serum: [], bos: [0.22, 0.48, 0.7] },
+  3: { serum: [0.3, 0.55], bos: [0.18, 0.3, 0.42, 0.55, 0.74] },
+  4: { serum: [0.2, 0.36, 0.52, 0.68], bos: [0.2, 0.36, 0.52, 0.68] },
+  5: { serum: [0.38, 0.46], bos: [0.38, 0.46] },
+};
+export function drawOkb(g, w, h, tip, etiket) {
+  g.fillStyle = '#000'; g.fillRect(0, 0, w, h);
+  const lw = w * 0.28, top = h * 0.2, lh = h * 0.62, cols = [[w * 0.2, 'Serum', 'serum'], [w * 0.56, 'BOS', 'bos']];
+  const spec = OKB_BANDS[tip] || OKB_BANDS[1];
+  for (const [x, name, key] of cols) {
+    g.strokeStyle = '#22345c'; g.lineWidth = 2; g.beginPath(); g.roundRect(x, top, lw, lh, 10); g.stroke();
+    text(g, name, x + lw / 2, top - h * 0.05, { size: Math.max(14, h * 0.07), weight: 700, align: 'center', color: '#dbe6ff' });
+    for (const p of spec[key]) {
+      const common = key === 'bos' && spec.serum.includes(p), mono = tip === 5;
+      g.fillStyle = key === 'bos' && !spec.serum.includes(p) ? '#ffb347' : '#9fc4ff';
+      g.fillRect(x + lw * 0.12, top + lh * p, lw * 0.76, Math.max(5, lh * (mono ? 0.05 : 0.035)));
+      void common;
+    }
+  }
+  text(g, `Tip ${tip}`, w / 2, h * 0.07, { size: Math.max(16, h * 0.075), weight: 700, align: 'center', color: '#fff', base: 'middle' });
+  text(g, 'Turuncu: yalnız BOS’ta görülen bant', w / 2, h * 0.9, { size: Math.max(12, h * 0.045), align: 'center', color: '#ffb347' });
+  text(g, etiket, w / 2, h * 0.965, { size: Math.max(12, h * 0.045), align: 'center', color: '#c9d1de', style: 'italic' });
+}
+
+// ---- IgG indeksi formülü: kesirler okunacak biçimde ----
+export function drawFormula(g, w, h, f) {
+  g.fillStyle = '#000'; g.fillRect(0, 0, w, h);
+  const fs = Math.max(16, Math.min(h * 0.17, w * 0.045)), cy = h * 0.5, bar = (x, wd) => { g.fillStyle = '#fff'; g.fillRect(x, cy - 1.5, wd, 3); };
+  font(g, fs, 700); const frac = (x, up, dn) => { font(g, fs, 600); const wd = Math.max(g.measureText(up).width, g.measureText(dn).width) + fs * 0.4; text(g, up, x + wd / 2, cy - fs * 0.35, { size: fs, weight: 600, align: 'center' }); bar(x, wd); text(g, dn, x + wd / 2, cy + fs * 1.05, { size: fs, weight: 600, align: 'center' }); return wd; };
+  font(g, fs, 700); const lw = g.measureText(f.sol + ' =').width;
+  font(g, fs, 600); const w1 = Math.max(g.measureText(f.ust1).width, g.measureText(f.alt1).width) + fs * 0.4, w2 = Math.max(g.measureText(f.ust2).width, g.measureText(f.alt2).width) + fs * 0.4, gap = fs * 0.5, divw = fs;
+  const total = lw + gap + w1 + gap + divw + gap + w2; let x = (w - total) / 2;
+  text(g, f.sol + ' =', x, cy + fs * 0.35, { size: fs, weight: 700, color: '#7cc4ff' }); x += lw + gap;
+  x += frac(x, f.ust1, f.alt1) + gap; text(g, '÷', x + divw / 2, cy + fs * 0.35, { size: fs, weight: 700, align: 'center' }); x += divw + gap; frac(x, f.ust2, f.alt2);
+}

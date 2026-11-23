@@ -4,14 +4,14 @@ import { drawVisual } from './visuals.js';
 const $ = (id) => document.getElementById(id);
 const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
-export function createUI2(exam, app, { basvuru }) {
+export function createUI2(exam, app, { basvuru, gecisMetni = '' }) {
   const data = exam.data;
   const root = $('sahne2');
   const el = {
     baslik: $('s2-baslik'), gorev: $('s2-gorev'), geri: $('btn-geri'), gruplar: $('s2-gruplar'), kutu: $('s2-visual-kutu'),
     canvas: $('s2-canvas'), aciklama: $('s2-aciklama'), task: $('s2-gorev-alani'), kartlar: $('s2-kartlar'),
     notBtn: $('s2-not-btn'), not: $('s2-not'), bitti: $('s2-bitti'), oyku: $('s2-oyku'), oykuBaslik: $('s2-oyku-baslik'),
-    video: $('bekleme2'), yedek: $('yedek2'),
+    yedek: $('yedek2'),
   };
   const g = el.canvas.getContext('2d');
 
@@ -87,6 +87,7 @@ export function createUI2(exam, app, { basvuru }) {
       el.not.innerHTML = `<h3>${esc(data.notBaslik)}</h3>` + (v.note.lines.length ? `<p>${esc(v.note.paragraph)}</p>` : `<p class="empty">${esc(data.notBos)}</p>`);
     }
     el.bitti.textContent = v.completed ? data.tamamlandi : '';
+    const go = document.getElementById('btn-s3'); go.hidden = !v.completed; go.textContent = gecisMetni; go.onclick = () => app.goto(3);
 
     // Sahne 01 öyküsü
     el.oyku.textContent = v.history || data.oykuYok;

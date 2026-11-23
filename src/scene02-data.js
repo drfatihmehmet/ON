@@ -19,8 +19,8 @@ export const SAHNE_02 = {
   geriDugme: '← Sahne 01’e dön',
 
   video: {
-    bekleme: 'assets/hasta-bekleme.mp4', // 10 sn, sessiz, döngü; giriş yürüyüşü yeniden oynamaz
-    yedekKare: 'assets/hasta-son-kare.jpg',
+    // Sahne 02 görseli: yarık lamba muayenesi (hasta + muayene eden hekim), 2:1
+    gorsel: 'assets/sahne02-muayene.jpg',
   },
 
   // Sahne 01'den alınan olgu (öykü metni Sahne 01 verisinden üretilir; burada yalnızca başvuru satırı)

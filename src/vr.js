@@ -2,6 +2,7 @@
 // Video yüzeyi, metin ve düğmeler sahnedeki canvas dokulu panellerdir (HTML katmanına bağımlı değil).
 import * as THREE from 'three';
 import { drawVisual } from './visuals.js';
+import { createS3Panels } from './vr-s3.js';
 
 const PPM = 800; // panel dokusu: metre başına piksel
 const C = { bg: '#000000', line: '#22345c', navy: '#002060', blue: '#0070C0', red: '#C00000',
@@ -27,7 +28,8 @@ class CanvasPanel {
   }
   hit(uv) {
     const x = uv.x * this.w, y = (1 - uv.y) * this.h;
-    return this.rects.find((r) => !r.disabled && x >= r.x && x <= r.x + r.w && y >= r.y && y <= r.y + r.h) || null;
+    const r = this.rects.find((q) => !q.disabled && x >= q.x && x <= q.x + q.w && y >= q.y && y <= q.y + q.h);
+    return r ? { ...r, fx: (x - r.x) / r.w } : null;
   }
 }
 
@@ -36,6 +38,7 @@ function rr(g, x, y, w, h, r) { g.beginPath(); g.roundRect(x, y, w, h, r); }
 // Çizim yardımcıları: metin kaydırma, düğme (tıklanabilir dikdörtgen kaydı)
 function makeUI(g, panel, hoverId) {
   const ui = {
+    g, panel,
     bg(border = C.line) { rr(g, 2, 2, panel.w - 4, panel.h - 4, 26); g.fillStyle = C.bg; g.fill(); g.lineWidth = 4; g.strokeStyle = border; g.stroke(); },
     wrap(text, x, y, maxW, size, color, weight = 400, lh = 1.35, style = '') {
       g.font = `${style} ${weight} ${size}px ${FONT}`; g.fillStyle = color; g.textBaseline = 'top';
@@ -94,7 +97,7 @@ function drawCards(ui, g, cards, kartTurleri, x, y, w, size = 26) {
   return y;
 }
 
-export function createVRScene({ store, exam, app }, video, { patient2, fallbackImage, firstFrame } = {}) {
+export function createVRScene({ store, exam, app, store3, viewer }, video, { patient2, patient3, fallbackImage, firstFrame } = {}) {
   const data = store.data;
   const d2 = exam.data;
   const scene = new THREE.Scene();
@@ -110,17 +113,21 @@ export function createVRScene({ store, exam, app }, video, { patient2, fallbackI
   const VH = 1.9, VW = VH * 16 / 9;
   const vtex = new THREE.VideoTexture(video.el); vtex.colorSpace = THREE.SRGBColorSpace;
   const itex = new THREE.VideoTexture(video.idleEl); itex.colorSpace = THREE.SRGBColorSpace;
-  const itex2 = new THREE.VideoTexture(patient2.idleEl); itex2.colorSpace = THREE.SRGBColorSpace;
+  const itex3 = new THREE.VideoTexture(patient3.idleEl); itex3.colorSpace = THREE.SRGBColorSpace;
   const imgTex = (url) => { const t = new THREE.Texture(); t.colorSpace = THREE.SRGBColorSpace;
     if (url) { const i = new Image(); i.onload = () => { t.image = i; t.needsUpdate = true; }; i.src = url; } return t; };
-  const firstTex = imgTex(firstFrame), lastTex = imgTex(fallbackImage);
+  const firstTex = imgTex(firstFrame), lastTex = imgTex(fallbackImage), examTex = imgTex(patient2.imageUrl);
   const screen = new THREE.Mesh(new THREE.PlaneGeometry(VW, VH), new THREE.MeshBasicMaterial({ map: firstTex }));
   screen.position.set(0, VH / 2, -2.8); scene.add(screen);
   function syncScreen() {
     let want;
-    if (app.scene === 2) want = patient2.missing ? lastTex : itex2;
+    if (app.scene === 2) want = examTex;
+    else if (app.scene === 3) want = itex3;
     else { const v = store.view(); want = v.videoMissing ? lastTex : v.idle ? itex : v.started ? vtex : firstTex; }
     if (screen.material.map !== want) { screen.material.map = want; screen.material.needsUpdate = true; }
+    // Sahne 02 görseli 2:1 ve daha küçük: panellerin arasında yüzler görünür kalsın
+    if (app.scene === 2) { screen.scale.set(1.9 * 2 / VW * 0.58, 0.58, 1); screen.position.set(0, 1.45, -3.2); }
+    else { screen.scale.set(1, 1, 1); screen.position.set(0, VH / 2, -2.8); }
   }
   const useFallback = syncScreen;
 
@@ -269,6 +276,7 @@ export function createVRScene({ store, exam, app }, video, { patient2, fallbackI
     } else if (!v.active) {
       ui.wrap('Bir muayene işlemi seçin. İşlemleri istediğiniz sırada yapabilir, tekrar inceleyebilirsiniz.', pad + 4, y, iw - 8, 25, C.muted, 400, 1.3);
     }
+    if (v.completed) ui.button('x:s3', pad, h - 186, iw, 72, 'Tetkik ve tedaviye geç', { size: 28, fill: C.red, stroke: '#e04040' });
     ui.button('x:not', pad, h - 100, iw, 72, 'Muayene notu ' + (v.notesOpen ? '▾' : '▸'), { size: 28 });
   });
 
@@ -278,14 +286,19 @@ export function createVRScene({ store, exam, app }, video, { patient2, fallbackI
   qPanel.mesh.position.set(R, 1.35, PZ); qPanel.mesh.rotation.y = -YAW;
   examLeft.mesh.position.set(L, 1.3, PZ); examLeft.mesh.rotation.y = YAW;
   examRight.mesh.position.set(R, 1.3, PZ); examRight.mesh.rotation.y = -YAW;
-  const groups = { 1: [refPanel, contentPanel, qPanel], 2: [refPanel, examLeft, examRight] };
-  const panels = [refPanel, contentPanel, qPanel, examLeft, examRight];
+  const s3 = createS3Panels({ CanvasPanel, C, rr }, { store3, viewer, app, test: false });
+  s3.left.mesh.position.set(L, 1.3, PZ); s3.left.mesh.rotation.y = YAW;
+  s3.right.mesh.position.set(R, 1.3, PZ); s3.right.mesh.rotation.y = -YAW;
+  const groups = { 1: [refPanel, contentPanel, qPanel], 2: [refPanel, examLeft, examRight], 3: [s3.left, s3.right] };
+  const panels = [refPanel, contentPanel, qPanel, examLeft, examRight, s3.left, s3.right];
   panels.forEach((p) => scene.add(p.mesh));
-  const activePanels = () => groups[app.scene === 2 ? 2 : 1];
+  const activePanels = () => groups[app.scene] || groups[1];
   function showScene() { const on = new Set(activePanels()); panels.forEach((p) => { p.mesh.visible = on.has(p); p.dirty = true; }); syncScreen(); }
 
   // eylemler → ortak store'lar (masaüstüyle aynı nesneler)
-  function act(id) {
+  function act(id, fx) {
+    if (id === 'back3' || id.startsWith('s3:') || id.startsWith('pg:')) { s3.act(id, fx); return; }
+    if (id === 'x:s3') { app.goto(3); return; }
     if (id === 'notes') store.toggleNotes();
     else if (id === 'np:0') store.setNotePage(0);
     else if (id === 'np:1') store.setNotePage(1);
@@ -303,7 +316,7 @@ export function createVRScene({ store, exam, app }, video, { patient2, fallbackI
   }
 
   const markDirty = () => { panels.forEach((p) => (p.dirty = true)); syncScreen(); };
-  store.subscribe(markDirty); exam.subscribe(markDirty); app.subscribe(showScene);
+  store.subscribe(markDirty); exam.subscribe(markDirty); store3.subscribe(markDirty); app.subscribe(showScene);
   showScene();
 
   // ---- ışın (ray) ----
@@ -315,7 +328,7 @@ export function createVRScene({ store, exam, app }, video, { patient2, fallbackI
     if (!hits.length) return null;
     const p = hits[0].object.userData.panel;
     const r = p.hit(hits[0].uv);
-    return r ? { panel: p, id: r.id, dist: hits[0].distance } : { panel: p, id: null, dist: hits[0].distance };
+    return r ? { panel: p, id: r.id, fx: r.fx, dist: hits[0].distance } : { panel: p, id: null, dist: hits[0].distance };
   }
   function castController(c) {
     tmpM.identity().extractRotation(c.matrixWorld);
@@ -329,6 +342,7 @@ export function createVRScene({ store, exam, app }, video, { patient2, fallbackI
   }
 
   function update() {
+    if (app.scene === 3) s3.tick();
     if (app.scene === 1) {
       const tgt = store.view().notePage;
       if (Math.abs(notePos - tgt) > 0.002) { notePos += (tgt - notePos) * 0.22; if (Math.abs(notePos - tgt) <= 0.002) notePos = tgt; contentPanel.dirty = true; }
@@ -336,7 +350,6 @@ export function createVRScene({ store, exam, app }, video, { patient2, fallbackI
     if (app.scene === 2) {
       exam.tick(); // pupilla / ölçüm animasyonları ve gözlem süresi XR karesinden de ilerler
       if (exam.view().animating) examLeft.dirty = true;
-      if (patient2.missing) syncScreen();
     }
     activePanels().forEach((p) => { if (p.dirty) p.redraw(hover.id); });
   }
@@ -349,7 +362,7 @@ export function createVRScene({ store, exam, app }, video, { patient2, fallbackI
       const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3(0, 0, -4)]),
         new THREE.LineBasicMaterial({ color: 0x7cc4ff }));
       line.scale.z = 1; c.add(line); c.userData.line = line;
-      c.addEventListener('selectstart', () => { const h = castController(c); if (h?.id) act(h.id); });
+      c.addEventListener('selectstart', () => { const h = castController(c); if (h?.id) act(h.id, h.fx); });
       scene.add(c); controllers.push(c);
     }
   }
@@ -388,7 +401,7 @@ export function mountPreview(vr, host) {
     const r = renderer.domElement.getBoundingClientRect();
     mouse.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
     const rc = new THREE.Raycaster(); rc.setFromCamera(mouse, camera);
-    const h = vr.castFrom(rc.ray.origin, rc.ray.direction); if (h?.id) vr.act(h.id);
+    const h = vr.castFrom(rc.ray.origin, rc.ray.direction); if (h?.id) vr.act(h.id, h.fx);
   });
   renderer.setAnimationLoop(() => { if (!running) return; vr.update(); renderer.render(scene, camera); });
   return { stop() { running = false; renderer.setAnimationLoop(null); renderer.domElement.remove(); removeEventListener('resize', size); renderer.dispose(); } };

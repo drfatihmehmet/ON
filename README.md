@@ -24,6 +24,18 @@ Tarayıcı: http://localhost:8080 · Testler: `npm test` (durum mantığı; Sahn
 | `assets/hasta-bekleme.mp4` | Karşılaşma bitince soru sorulurken döngüyle oynayan bekleme klibi (kaynak: `bekleme.mp4`) |
 | `assets/hasta-ilk-kare.jpg`, `hasta-son-kare.jpg` | Başlangıç karesi / video yokken yedek önden kare |
 
+## Sahne 03 — Tetkik, akut tedavi ve izlem
+| Dosya | Görev |
+|---|---|
+| `src/scene03-config.js` | **Eğitmenin doldurduğu TEK alan**: MRG dosyaları, doğrulanmış rapor ekleri, lezyon işaretleri, kontrol görme keskinliği, 14. gün OKB paterni ve IgG indeksi. `null` = eksik (hiçbir zaman normal/negatif sayılmaz) |
+| `src/scene03-data.js` | Tüm metinler, laboratuvar değerleri (sayı ve birim ayrı alanlar), tedavi istemi |
+| `src/case-state.js` | Simülasyon günü, örnek alımı, doz kayıtları, raporlar (oran kodda hesaplanır) |
+| `src/s3-model.js` | Masaüstü ve VR'nin ortak çizdiği bildirimsel model + eylem yönlendirme |
+| `src/ui3.js`, `src/vr-s3.js`, `src/mrg-viewer.js` | Masaüstü, VR (sayfalı) ve MRG görüntüleyici (kesit dizisi / MP4) |
+
+Dev: `?sahne=3` (öncekileri atlar). MRG görüntüleyici denemesi: `?sahne=3&mrgtest=1` — **test deseni** yükler, hastaya ait değildir ve arayüzde etiketlenir.
+MRG bağlamak için `scene03-config.js` içindeki `mrg.beyin` / `mrg.servikal` alanlarını doldurun (örn. `{ tur: 'video', dosya: 'assets/mrg/beyin.mp4' }` veya `{ tur: 'kesit', dosyalar: [...] }`).
+
 ## Arayüz kuralları
 - Tüm paneller ve kartlar siyah zeminlidir (beyaz/açık zemin yok); renk yalnızca kenar çubuğu ve etiketlerde.
 - Sahne 01'de "Öykü notları" ve "Eğitici not" tek **Notlar** panelinde, yana kayan sayfalar olarak birleşiktir (sekme, ok, kaydırma/klavye ←→; VR'de sekme + ‹ › düğmeleri ve kayma animasyonu).

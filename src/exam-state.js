@@ -4,15 +4,17 @@ const clamp01 = (x) => Math.max(0, Math.min(1, x));
 const ease = (x) => x * x * (3 - 2 * x);
 
 // ---- yönlendirme ----
-export function createApp({ canLeaveScene1 = () => true } = {}) {
+export function createApp({ canLeaveScene1 = () => true, canLeaveScene2 = () => true } = {}) {
   let scene = 1;
   const listeners = new Set();
   return {
     get scene() { return scene; },
     subscribe(fn) { listeners.add(fn); return () => listeners.delete(fn); },
-    goto(n) {
+    // force: kullanıcı "Sahne 3'e geç" ile önceki sahneleri atlayabilir
+    goto(n, force = false) {
       if (n === scene) return true;
-      if (n === 2 && !canLeaveScene1()) return false;
+      if (!force && n >= 2 && !canLeaveScene1()) return false;
+      if (!force && n >= 3 && !canLeaveScene2()) return false;
       scene = n; listeners.forEach((fn) => fn()); return true;
     },
   };
