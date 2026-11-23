@@ -42,4 +42,14 @@ const mk = () => { const s = createStore(D); s.start(); s.videoEnded(); return s
 
 assert.ok(!/(^|[^a-zçğıöşü])tanı/i.test(JSON.stringify(D.sorular.filter((x) => x.tur !== 'egitici').map((x) => x.yanit))), 'hasta yanıtında tanı yok');
 { const s = mk(); assert.equal(s.view().idle, false); s.setIdle(true); assert.equal(s.view().idle, true); }
+// birleşik Notlar paneli: sayfalar, eğitici sayfa yalnız koşul sağlanınca
+{ const s = mk(); let v = s.view(); assert.deepEqual(v.notePages, ['oyku']); assert.equal(v.notesOpen, false);
+  assert.equal(s.setNotePage(1), false, 'eğitici sayfa kilitli');
+  s.ask('baslangic'); assert.equal(s.view().teachingNew, false); s.ask('gorme'); v = s.view();
+  assert.deepEqual(v.notePages, ['oyku', 'egitici']); assert.equal(v.teachingNew, true);
+  s.toggleNotes(); v = s.view(); assert.equal(v.notesOpen, true); assert.equal(v.notePage, 0); assert.equal(v.teachingNew, true);
+  s.stepNotePage(1); v = s.view(); assert.equal(v.notePage, 1); assert.equal(v.teachingNew, false);
+  s.stepNotePage(1); assert.equal(s.view().notePage, 1, 'sınırda kalır'); s.stepNotePage(-1); assert.equal(s.view().notePage, 0);
+  s.setNotePage(1); s.toggleNotes(); assert.equal(s.view().notesOpen, false); s.setNotePage(0); assert.equal(s.view().notesOpen, true);
+  assert.equal('teachingOpen' in s.view(), false, 'ayrı eğitici panel yok'); }
 console.log('state testleri: tamam');

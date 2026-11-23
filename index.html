@@ -3,18 +3,18 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Klinik Simülasyon — Sahne 01</title>
+<title>Klinik Simülasyon</title>
 <link rel="icon" href="data:,">
 <link rel="stylesheet" href="style.css">
 <script type="importmap">{ "imports": { "three": "./vendor/three.module.js" } }</script>
 </head>
 <body>
 <a class="skip" href="#panel">Soru paneline geç</a>
-<main class="app">
+<main class="app" id="sahne1">
   <section class="stage" aria-labelledby="sahne-baslik">
     <header class="stage-head">
       <p class="eyebrow">Klinik simülasyon</p>
-      <h1 id="sahne-baslik"></h1>
+      <h1 id="sahne-baslik" tabindex="-1"></h1>
       <p class="gorev" id="gorev"></p>
     </header>
 
@@ -53,15 +53,27 @@
 
       <div class="tools">
         <button type="button" class="btn ghost" id="btn-notes" aria-expanded="false" aria-controls="notes">
-          Öykü notları <span class="count" id="notes-count"></span>
-        </button>
-        <button type="button" class="btn ghost" id="btn-teach" aria-expanded="false" aria-controls="teach" hidden>
-          Eğitici not
+          Notlar <span class="count" id="notes-count"></span><span class="yeni" id="notes-yeni" hidden>Yeni</span>
         </button>
       </div>
 
-      <div class="disclosure" id="notes" hidden></div>
-      <div class="disclosure teach" id="teach" hidden></div>
+      <section class="pager" id="notes" aria-label="Notlar" hidden>
+        <div class="pager-bar">
+          <div class="tabs" role="tablist" aria-label="Not sayfaları">
+            <button type="button" role="tab" class="tab" id="tab-oyku" aria-controls="page-oyku">Öykü notları</button>
+            <button type="button" role="tab" class="tab" id="tab-egitici" aria-controls="page-egitici" hidden>Eğitici not</button>
+          </div>
+          <div class="arrows">
+            <button type="button" class="arrow" id="pg-prev" aria-label="Önceki sayfa">‹</button>
+            <button type="button" class="arrow" id="pg-next" aria-label="Sonraki sayfa">›</button>
+          </div>
+        </div>
+        <div class="pages" id="pages" tabindex="0" aria-label="Kaydırılabilir not sayfaları">
+          <article class="page" id="page-oyku" role="tabpanel" aria-labelledby="tab-oyku"></article>
+          <article class="page teach" id="page-egitici" role="tabpanel" aria-labelledby="tab-egitici" hidden></article>
+        </div>
+        <p class="pdots" id="pdots" aria-hidden="true"></p>
+      </section>
 
       <div class="finish">
         <button type="button" class="btn primary" id="btn-finish" disabled aria-describedby="finish-hint">Öyküyü tamamla</button>
@@ -69,6 +81,56 @@
       </div>
       <div class="summary" id="summary" aria-live="polite" hidden></div>
     </div>
+  </section>
+</main>
+
+<main class="app" id="sahne2" hidden>
+  <section class="stage" aria-labelledby="s2-baslik">
+    <header class="stage-head">
+      <p class="eyebrow">Klinik simülasyon</p>
+      <h1 id="s2-baslik" tabindex="-1"></h1>
+      <p class="gorev" id="s2-gorev"></p>
+    </header>
+
+    <div class="frame">
+      <div class="viewport">
+        <video id="bekleme2" muted loop playsinline preload="auto" disablepictureinpicture aria-label="Hasta, önden görünüm, bekliyor"></video>
+        <img id="yedek2" alt="Hasta, önden görünüm" hidden>
+      </div>
+      <aside class="basvuru" aria-label="Başvuru kartı">
+        <p class="b-yer"></p>
+        <p class="b-hasta"></p>
+        <p class="b-soz"></p>
+      </aside>
+    </div>
+
+    <div class="actions">
+      <button type="button" class="btn ghost" id="btn-geri"></button>
+      <button type="button" class="btn" id="btn-vr2" hidden>VR’ye gir</button>
+    </div>
+    <details class="oyku" id="s2-oyku-kutu">
+      <summary id="s2-oyku-baslik"></summary>
+      <p id="s2-oyku"></p>
+    </details>
+  </section>
+
+  <section class="panel exam" id="panel2" aria-labelledby="s2-panel-baslik" tabindex="-1">
+    <h2 id="s2-panel-baslik"></h2>
+    <div id="s2-gruplar" class="gruplar"></div>
+
+    <figure class="visual" id="s2-visual-kutu" hidden>
+      <canvas id="s2-canvas" width="960" height="600" role="img" aria-label="Muayene görünümü"></canvas>
+      <figcaption class="sr" id="s2-aciklama" aria-live="polite"></figcaption>
+    </figure>
+
+    <div id="s2-gorev-alani" class="task"></div>
+    <div id="s2-kartlar" class="cards" aria-live="polite"></div>
+
+    <div class="tools">
+      <button type="button" class="btn ghost" id="s2-not-btn" aria-expanded="false" aria-controls="s2-not">Muayene notu</button>
+    </div>
+    <div class="disclosure" id="s2-not" hidden></div>
+    <p class="status" id="s2-bitti" role="status" aria-live="polite"></p>
   </section>
 </main>
 

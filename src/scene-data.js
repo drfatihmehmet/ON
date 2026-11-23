@@ -125,6 +125,7 @@ export const SAHNE_01 = {
   sonuc: {
     ozetGiris: '25 yaşında erkek hasta acil servise “Sağ gözüm bulanık görüyor.” yakınmasıyla başvurdu.',
     sonrakiSahne: 'Sıradaki sahne: Göz ve nörolojik muayene',
+    gecisDugme: 'Göz ve nörolojik muayeneye geç',
   },
 
   // Yalnız geliştirici notu — arayüzde gösterilmez, "normal" diye kaydedilmez.

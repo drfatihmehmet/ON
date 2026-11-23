@@ -3,13 +3,14 @@
 const $ = (id) => document.getElementById(id);
 const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
-export function createUI(store, video) {
+export function createUI(store, video, { onNext } = {}) {
   const data = store.data;
   const el = {
     video: $('hasta'), yedek: $('yedek'), bos: $('bos'), vr: $('btn-vr'), status: $('status'),
     lock: $('lock'), body: $('panel-body'), qlist: $('qlist'), answer: $('answer'),
-    notesBtn: $('btn-notes'), notesCount: $('notes-count'), teachBtn: $('btn-teach'),
-    notes: $('notes'), teach: $('teach'), finish: $('btn-finish'), finishHint: $('finish-hint'), summary: $('summary'),
+    notesBtn: $('btn-notes'), notesCount: $('notes-count'), notesNew: $('notes-yeni'),
+    notes: $('notes'), pages: $('pages'), pgOyku: $('page-oyku'), pgEgitici: $('page-egitici'),
+    tabOyku: $('tab-oyku'), tabEgitici: $('tab-egitici'), prev: $('pg-prev'), next: $('pg-next'), dots: $('pdots'), finish: $('btn-finish'), finishHint: $('finish-hint'), summary: $('summary'),
   };
 
   $('sahne-baslik').textContent = data.baslik;
@@ -30,7 +31,25 @@ export function createUI(store, video) {
   });
 
   el.notesBtn.addEventListener('click', () => store.toggleNotes());
-  el.teachBtn.addEventListener('click', () => store.toggleTeaching());
+  el.tabOyku.addEventListener('click', () => store.setNotePage(0));
+  el.tabEgitici.addEventListener('click', () => store.setNotePage(1));
+  el.prev.addEventListener('click', () => store.stepNotePage(-1));
+  el.next.addEventListener('click', () => store.stepNotePage(1));
+  // Yana kaydırma (dokunma / izleme dörtgeni / tekerlek): kaydırma bitince sayfa durumu güncellenir
+  let scrollTimer = null;
+  el.pages.addEventListener('scroll', () => {
+    clearTimeout(scrollTimer);
+    scrollTimer = setTimeout(() => {
+      const w = el.pages.clientWidth; if (!w) return;
+      const idx = Math.round(el.pages.scrollLeft / w);
+      if (idx !== store.view().notePage) { shownPage = idx; store.setNotePage(idx); }
+    }, 90);
+  });
+  el.pages.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight') { store.stepNotePage(1); e.preventDefault(); }
+    else if (e.key === 'ArrowLeft') { store.stepNotePage(-1); e.preventDefault(); }
+  });
+  let shownPage = -1, wasOpen = false;
   el.finish.addEventListener('click', () => {
     if (store.complete()) { el.summary.tabIndex = -1; el.summary.focus(); }
   });
@@ -71,17 +90,25 @@ export function createUI(store, video) {
       el.answer.innerHTML = renderAnswer(v.current);
     }
 
-    // öykü notları
+    // birleşik Notlar paneli: yana kayan sayfalar (Öykü notları · Eğitici not)
     el.notesBtn.setAttribute('aria-expanded', String(v.notesOpen));
     el.notesCount.textContent = v.askedCount ? `(${v.askedCount}/${v.total})` : '';
+    el.notesNew.hidden = !v.teachingNew;
     el.notes.hidden = !v.notesOpen;
-    if (v.notesOpen) el.notes.innerHTML = renderNotes(v);
-
-    // eğitici not
-    el.teachBtn.hidden = !v.teachingAvailable;
-    el.teachBtn.setAttribute('aria-expanded', String(v.teachingOpen));
-    el.teach.hidden = !v.teachingOpen;
-    if (v.teachingOpen) el.teach.innerHTML = `<h3>${esc(data.egiticiNot.baslik)}</h3><p>${esc(data.egiticiNot.metin)}</p>`;
+    el.tabEgitici.hidden = !v.teachingAvailable;
+    el.pgEgitici.hidden = !v.teachingAvailable;
+    el.pgOyku.innerHTML = renderNotes(v);
+    el.pgEgitici.innerHTML = v.teachingAvailable ? `<h3>${esc(data.egiticiNot.baslik)}</h3><p>${esc(data.egiticiNot.metin)}</p>` : '';
+    [el.tabOyku, el.tabEgitici].forEach((t, i) => { t.setAttribute('aria-selected', String(v.notePage === i)); t.tabIndex = v.notePage === i ? 0 : -1; t.classList.toggle('on', v.notePage === i); });
+    el.prev.disabled = v.notePage === 0; el.next.disabled = v.notePage >= v.notePages.length - 1;
+    el.prev.hidden = el.next.hidden = v.notePages.length < 2;
+    el.dots.innerHTML = v.notePages.map((_, i) => `<span class="d${i === v.notePage ? ' on' : ''}"></span>`).join('');
+    el.dots.hidden = v.notePages.length < 2;
+    if (v.notesOpen && (!wasOpen || shownPage !== v.notePage)) {
+      const go = () => { const w = el.pages.clientWidth; if (w) el.pages.scrollTo({ left: v.notePage * w, behavior: wasOpen ? 'smooth' : 'auto' }); shownPage = v.notePage; };
+      requestAnimationFrame(go);
+    }
+    wasOpen = v.notesOpen;
 
     // tamamla
     el.finish.disabled = !v.canComplete;
@@ -91,7 +118,7 @@ export function createUI(store, video) {
 
     el.summary.hidden = !v.completed;
     if (v.completed) {
-      el.summary.innerHTML = `<h3>Topladığınız öykü</h3><p>${esc(v.summary)}</p><p class="next">${esc(data.sonuc.sonrakiSahne)}</p>`;
+      el.summary.innerHTML = `<h3>Topladığınız öykü</h3><p>${esc(v.summary)}</p><p class="next">${esc(data.sonuc.sonrakiSahne)}</p><button type="button" class="btn primary go" id="btn-next">${esc(data.sonuc.gecisDugme)}</button>`;
     }
   }
 
@@ -118,6 +145,7 @@ export function createUI(store, video) {
     return h;
   }
 
+  el.summary.addEventListener('click', (e) => { if (e.target.closest('#btn-next')) onNext?.(); });
   store.subscribe(render);
   render();
 
