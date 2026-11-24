@@ -23,7 +23,7 @@ const mk = () => { const s = createStore(D); s.start(); s.videoEnded(); return s
   assert.equal(v.askedCount, 1); assert.ok(v.seq > seq); assert.equal(v.current.id, 'onceki'); }
 
 // tamamla yalnız 5/5 sonrası
-{ const s = mk(); D.sorular.slice(0, 4).forEach((q) => s.ask(q.id));
+{ const s = mk(); D.sorular.filter((q) => q.zorunlu !== false && q.id !== 'aile').forEach((q) => s.ask(q.id));
   assert.equal(s.view().canComplete, false); assert.equal(s.complete(), false);
   s.ask('aile'); assert.equal(s.view().canComplete, true); assert.equal(s.complete(), true);
   const v = s.view(); assert.equal(v.completed, true);

@@ -6,22 +6,25 @@ import { drawOkb, drawFormula } from './visuals.js';
 const $ = (id) => document.getElementById(id);
 const esc = (t) => String(t ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
-export function createUI3(store, viewer, app, { test = false } = {}) {
+export function createUI3(store, viewer, app, { test = false, n = 3, adapter = null } = {}) {
+  const A = adapter || { buildModel: (v) => buildModel(v, store, viewer), perform: (id, frac) => perform(store, viewer, id, frac) };
   const data = store.data;
-  const el = { baslik: $('s3-baslik'), gorev: $('s3-gorev'), geri: $('btn-geri3'), time: $('s3-time'), ops: $('s3-ops'), ctx: $('s3-ctx'),
-    hasta: $('s3-hasta'), mrg: $('s3-mrg'), lab: $('s3-lab'), canvas: $('s3-mrg-canvas'), onceki: $('s3-onceki'), panel: $('panel3') };
+  const el = { baslik: $(`s${n}-baslik`), gorev: $(`s${n}-gorev`), geri: $(`btn-geri${n}`), time: $(`s${n}-time`), ops: $(`s${n}-ops`), ctx: $(`s${n}-ctx`),
+    hasta: $(`s${n}-hasta`), infuzyon: $(`s${n}-infuzyon`), dmf: $(`s${n}-dmf`), mrg: $(`s${n}-mrg`), lab: $(`s${n}-lab`), canvas: $(`s${n}-mrg-canvas`), onceki: $(`s${n}-onceki`), panel: $(`panel${n}`) };
   const g = el.canvas.getContext('2d');
-  el.baslik.textContent = data.baslik; el.gorev.textContent = 'Göreviniz: ' + data.gorev; $('s3-panel-baslik').textContent = data.panelBaslik;
-  el.geri.textContent = data.geriDugme; el.geri.addEventListener('click', () => app.goto(2));
+  el.baslik.textContent = data.baslik; el.gorev.textContent = 'Göreviniz: ' + data.gorev; $(`s${n}-panel-baslik`).textContent = data.panelBaslik;
+  el.geri.textContent = data.geriDugme; el.geri.addEventListener('click', () => app.goto(n - 1));
 
   let model = null, lastDraw = [];
 
   const cardHtml = (c) => {
     const title = c.title || data.kartTurleri[c.kind].baslik;
+    const ROZET = { UZL: 'Uzlaşı veya kılavuz metni', DER: 'Derleme, kayıt veya deneyim verisi', 'KÜB': 'Kısa ürün bilgisiyle doğrulanmalı', KURGU: 'Eğitim amaçlı kurgu veri', '?': 'Bilinmeyen veya girilmedi' };
+    const tag = c.rozet || c.kaynak ? `<span class="tag">${c.rozet ? `<b title="${esc(ROZET[c.rozet] || c.rozet)}">${esc(c.rozet)}</b> ` : ''}${esc(c.kaynak || '')}</span>` : '';
     const body = c.kind === 'yanit' ? `<blockquote>“${esc(c.text)}”</blockquote>`
       : c.list?.length && c.kind !== 'rapor' ? `<ul>${c.list.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>`
       : `<p class="t">${esc(c.text)}</p>`;
-    return `<article class="card ${c.kind}"><p class="k">${esc(title)}</p>${body}</article>`;
+    return `<article class="card ${c.kind}${c.rozet === 'KURGU' ? ' kurgu' : ''}"><p class="k">${esc(title)}</p>${body}${tag}</article>`;
   };
   const btnHtml = (b) => `<button type="button" class="op${b.on ? ' on' : ''}${b.primary ? ' prim' : ''}" data-act="${esc(b.id)}" ${b.disabled ? 'disabled' : ''} aria-pressed="${!!b.on}">` +
     `<span class="ad">${esc(b.label)}${b.caret ? `<span class="caret" aria-hidden="true">${b.on ? '▾' : '▸'}</span>` : ''}</span>${b.badge ? `<span class="st ok">${esc(b.badge)}</span>` : ''}</button>`;
@@ -49,17 +52,18 @@ export function createUI3(store, viewer, app, { test = false } = {}) {
 
   function render() {
     const v = store.view();
-    model = buildModel(v, store, viewer);
+    model = A.buildModel(v);
     // sol görünüm
-    el.hasta.hidden = model.left.kind !== 'hasta'; el.mrg.hidden = model.left.kind !== 'mrg'; el.lab.hidden = model.left.kind !== 'lab';
+    el.hasta.hidden = model.left.kind !== 'hasta'; if (el.infuzyon) el.infuzyon.hidden = model.left.kind !== 'infuzyon'; if (el.dmf) el.dmf.hidden = model.left.kind !== 'dmf'; el.mrg.hidden = model.left.kind !== 'mrg'; el.lab.hidden = model.left.kind !== 'lab';
     if (model.left.kind === 'lab') el.lab.innerHTML = leftHtml(model.left);
     // önceki muayene
     const pv = model.prev;
     el.onceki.innerHTML = `<p class="k">${esc(data.oncekiMuayene.baslik)}</p><p>${esc(data.olguBaglami)}</p><p>${esc(pv.note || data.oncekiMuayene.bos)}</p>`;
     // zaman ve eylemler
-    el.time.innerHTML = `<span>${esc(model.time.label)}: <b>${model.time.day}</b></span><button type="button" class="btn" data-act="day">${esc(model.time.next)}</button>`;
+    el.time.hidden = !model.time;
+    if (model.time) el.time.innerHTML = `<span>${esc(model.time.label)}: <b>${model.time.day}</b></span>`;
     el.ops.innerHTML = model.ops.map((o, i) => `<button type="button" class="op${o.on ? ' current' : ''}" data-act="op:${o.id}" aria-pressed="${o.on}"><span class="ad">${i + 1}. ${esc(o.ad)}</span>${o.status ? `<span class="st${/Sonuçlandı|Doz/.test(o.status) ? ' ok' : ''}">${esc(o.status)}</span>` : ''}</button>`).join('') +
-      `<button type="button" class="op${v.active === 'kayit' ? ' current' : ''}" data-act="op:kayit"><span class="ad">${esc(data.kayit.dugme)}</span></button>`;
+      (model.extraOps || []).map((o) => `<button type="button" class="op${o.on ? ' current' : ''}" data-act="op:${o.id}"><span class="ad">${esc(o.ad)}</span></button>`).join('');
     // bağlam (odağı koru)
     const ae = document.activeElement; const key = ae && el.panel.contains(ae) ? (ae.dataset.act || (ae.dataset.ans != null ? 'ans' + ae.dataset.ans : null)) : null;
     const typing = ae && ae.tagName === 'TEXTAREA';
@@ -75,25 +79,25 @@ export function createUI3(store, viewer, app, { test = false } = {}) {
   }
 
   // ---- olaylar (delegasyon) ----
-  el.panel.addEventListener('click', (e) => { const b = e.target.closest('[data-act]'); if (!b || b.disabled) return; perform(store, viewer, b.dataset.act); });
+  el.panel.addEventListener('click', (e) => { const b = e.target.closest('[data-act]'); if (!b || b.disabled) return; A.perform(b.dataset.act); });
   el.panel.addEventListener('input', (e) => {
     const t = e.target;
-    if (t.matches('[data-scrub]')) { viewer.seekFrac(store.view().mrg.tab, Number(t.value) / 1000); return; }
+    if (t.matches('[data-scrub]')) { A.perform('scrub', Number(t.value) / 1000); return; }
     if (t.matches('[data-ans]')) { store.setAnswer(Number(t.dataset.ans), t.value, true); const b = el.panel.querySelector('[data-act="save"]'); if (b) b.disabled = !store.view().kayit.canSave; }
   });
   // MRG klavye: ← → kesit, boşluk oynat/duraklat
   el.mrg.addEventListener('keydown', () => {});
   document.addEventListener('keydown', (e) => {
-    if (app.scene !== 3 || store.view().active !== 'mrg' || /INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) return;
+    if (!viewer || app.scene !== n || store.view().active !== 'mrg' || /INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) return;
     const tab = store.view().mrg.tab;
-    if (e.key === 'ArrowRight') { viewer.isVideo(tab) ? viewer.seekBy(tab, 1) : perform(store, viewer, 'sl:+1'); e.preventDefault(); }
-    else if (e.key === 'ArrowLeft') { viewer.isVideo(tab) ? viewer.seekBy(tab, -1) : perform(store, viewer, 'sl:-1'); e.preventDefault(); }
+    if (e.key === 'ArrowRight') { viewer.isVideo(tab) ? viewer.seekBy(tab, 1) : A.perform('sl:+1'); e.preventDefault(); }
+    else if (e.key === 'ArrowLeft') { viewer.isVideo(tab) ? viewer.seekBy(tab, -1) : A.perform('sl:-1'); e.preventDefault(); }
     else if (e.key === ' ' && viewer.isVideo(tab)) { viewer.toggle(tab); e.preventDefault(); }
   });
 
   // ---- tuval döngüsü ----
   function frame() {
-    if (app.scene === 3 && model?.left.kind === 'mrg') {
+    if (viewer && app.scene === n && model?.left.kind === 'mrg') {
       const v = store.view(), tab = v.mrg.tab;
       drawMrg(g, 0, 0, el.canvas.width, el.canvas.height, { viewer, tab, slice: v.mrg.slice[tab], v, data, test });
       const sc = el.ctx.querySelector('[data-scrub]');

@@ -97,7 +97,7 @@ assert.ok(D.pupilla.gecisMs <= 600, 'geçiş kısa');
   const app = createApp({ canLeaveScene1: () => s1.view().completed });
   assert.equal(app.goto(2), false); SAHNE_01.sorular.filter((q) => q.zorunlu !== false).forEach((q) => s1.ask(q.id)); s1.complete();
   assert.equal(app.goto(2), true); assert.equal(app.scene, 2);
-  assert.equal(app.goto(1), true); const v = s1.view(); assert.equal(v.completed, true); assert.equal(v.askedCount, 5); assert.ok(v.summary.length > 50);
+  assert.equal(app.goto(1), true); const v = s1.view(); assert.equal(v.completed, true); assert.equal(v.askedCount, 7); assert.ok(v.summary.length > 50);
   const e = createExamStore(D, { history: () => s1.view().summary, clock: () => 0 }); assert.equal(e.view(0).history, v.summary); }
 
 // ---- veri sözleşmesi: üretilmemiş sayılar yok ----

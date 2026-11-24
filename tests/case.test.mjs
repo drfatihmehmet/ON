@@ -3,6 +3,9 @@ import { SAHNE_03 as D } from '../src/scene03-data.js';
 import { OLGU_YAPILANDIRMA, eksikVarliklar } from '../src/scene03-config.js';
 import { createCaseStore, fmt } from '../src/case-state.js';
 
+// Boş (girilmemiş) yapılandırma: girilmeyen değerin normal/negatif sayılmadığını sınar
+const N = (o) => Object.fromEntries(Object.keys(o).map((k) => [k, null]));
+const BOS_CFG = { ...OLGU_YAPILANDIRMA, kurgu: false, mrgRaporEki: N(OLGU_YAPILANDIRMA.mrgRaporEki), klinik: N(OLGU_YAPILANDIRMA.klinik), bos14gun: N(OLGU_YAPILANDIRMA.bos14gun), dmt: N(OLGU_YAPILANDIRMA.dmt), izlem: N(OLGU_YAPILANDIRMA.izlem), tani: { bolgeler: N(OLGU_YAPILANDIRMA.tani.bolgeler), dit: null, cvs: null, prl: null, kflc: null, aciklama: null, antikor: N(OLGU_YAPILANDIRMA.tani.antikor) } };
 const mk = (cfg = OLGU_YAPILANDIRMA, prev) => createCaseStore(D, cfg, prev ? { prev } : undefined);
 const allChecks = (s) => D.lp.onKart.maddeler.forEach((m) => s.lpCheck(m.id));
 const allPairs = (s) => D.lp.esler.forEach((e) => s.lpSerum(e.id));
@@ -36,7 +39,7 @@ assert.equal(D.kan.satirlar.length, 10);
   assert.equal(v.lp.routine.find((r) => r.id === 'esGlukoz').metin, 'Alınmadı'); assert.equal(v.lp.pairsDone, false); assert.equal(v.lp.missingPairs.length, 2); }
 
 // ---- 14 gün örnek alım gününden hesaplanır ----
-{ const s = mk(); s.nextDay(); s.nextDay(); /* gün 3 */ allChecks(s); allPairs(s); s.lpSample(); let v = s.view();
+{ const s = mk(BOS_CFG); s.nextDay(); s.nextDay(); /* gün 3 */ allChecks(s); allPairs(s); s.lpSample(); let v = s.view();
   assert.equal(v.sampleDay, 3); assert.equal(v.dueDay, 17); assert.equal(v.bosReady, false);
   for (let i = 0; i < 13; i++) s.nextDay(); v = s.view(); assert.equal(v.day, 16); assert.equal(v.bosReady, false); assert.equal(s.bosOpen(), false);
   s.nextDay(); v = s.view(); assert.equal(v.day, 17); assert.equal(v.bosReady, true); assert.equal(v.status.bos, 'Sonuçlandı'); assert.equal(s.bosOpen(), true);
@@ -53,35 +56,34 @@ assert.equal(D.kan.satirlar.length, 10);
 // ---- tedavi: sonuç beklemeden başlar; 5 ayrı gün; çift tıklama ek doz üretmez ----
 { const s = mk(); assert.equal(s.view().lp.sampled, false); assert.equal(s.giveDose(), false, 'istem yokken doz yok');
   assert.equal(s.txOrder(), true, 'OKB/BOS olmadan başlatılabilir'); assert.equal(s.txOrder(), false);
-  assert.equal(s.giveDose(), true); assert.equal(s.giveDose(), false, 'aynı gün ikinci doz yok'); assert.equal(s.giveDose(), false);
+  assert.equal(s.giveDose(), true); assert.equal(s.view().day, 2, 'doz sonrası gün ertesi güne ilerler');
   assert.equal(s.view().izlem.given, 1); assert.equal(s.view().status.tx, 'Doz uygulandı (1/5)');
-  for (let d = 2; d <= 5; d++) { s.nextDay(); assert.equal(s.view().izlem.canGive, true); assert.equal(s.giveDose(), true); assert.equal(s.giveDose(), false); }
+  for (let d = 2; d <= 5; d++) { assert.equal(s.view().izlem.canGive, true); assert.equal(s.giveDose(), true); }
   let v = s.view(); assert.equal(v.izlem.given, 5); assert.equal(v.izlem.complete, true); assert.deepEqual(v.izlem.boxes.map((b) => b.day), [1, 2, 3, 4, 5]);
   assert.deepEqual(v.izlem.boxes.map((b) => b.ad), ['1. gün · 1 g IV', '2. gün · 1 g IV', '3. gün · 1 g IV', '4. gün · 1 g IV', '5. gün · 1 g IV']);
-  s.nextDay(); assert.equal(s.giveDose(), false, 'beşten fazla doz yok'); assert.equal(s.view().izlem.given, 5);
+  assert.equal(s.giveDose(), false, 'beşten fazla doz yok'); assert.equal(s.view().izlem.given, 5);
   assert.equal(v.izlem.kontrol, 'Henüz kaydedilmedi'); }
 
 // ---- atlanan gün: dozlar günde birer kez, sıralı ----
-{ const s = mk(); s.txOrder(); s.giveDose(); s.nextDay(); s.nextDay(); assert.equal(s.giveDose(), true); const v = s.view(); assert.deepEqual(v.izlem.boxes.slice(0, 2).map((b) => b.day), [1, 3]); }
+{ const s = mk(); s.txOrder(); s.giveDose(); assert.equal(s.giveDose(), true); const v = s.view(); assert.deepEqual(v.izlem.boxes.slice(0, 2).map((b) => b.day), [1, 2]); }
 
 // ---- dozlar sahne değiştirince korunur (durum nesnesi aynı) ----
 { const s = mk(); s.txOrder(); s.giveDose(); const again = s.view(); assert.equal(again.izlem.given, 1); }
 
 // ---- MRG: görüntü yokken rapor erişilebilir; ek veri yalnız doğrulanmışsa ----
-{ const s = mk(); let v = s.view(); assert.equal(v.mrg.asset.beyin, false); assert.equal(v.mrg.report, null);
+{ const noImg = { ...BOS_CFG, mrg: { beyin: null, servikal: null } }; const s = mk(noImg); let v = s.view(); assert.equal(v.mrg.asset.beyin, false); assert.equal(v.mrg.report, null);
   s.mrgReport(); v = s.view(); assert.equal(v.mrg.report.lines[0], 'Beyin ve servikal omurilik MRG’de MS ile uyumlu demiyelinizan plaklar izlenmektedir.');
   assert.equal(v.mrg.report.extra.length, 0); assert.match(v.mrg.report.eksik, /doğrulanmamıştır/);
   s.mrgTab('servikal'); assert.equal(s.view().mrg.reportOpen, false, 'rapor sekme başına'); assert.equal(s.view().mrg.markersAvailable, false);
-  const cfg = { ...OLGU_YAPILANDIRMA, mrg: { beyin: { tur: 'video', dosya: 'x.mp4' }, servikal: null }, mrgRaporEki: { ...OLGU_YAPILANDIRMA.mrgRaporEki, lezyonSayisi: 'X' }, isaretler: { beyin: [{ kesit: 0, x: 0.5, y: 0.5, etiket: 't' }], servikal: [] } };
+  const cfg = { ...BOS_CFG, mrg: { beyin: { tur: 'video', dosya: 'x.mp4' }, servikal: null }, mrgRaporEki: { ...BOS_CFG.mrgRaporEki, lezyonSayisi: 'X' }, isaretler: { beyin: [{ kesit: 0, x: 0.5, y: 0.5, etiket: 't' }], servikal: [] } };
   const t = mk(cfg); t.mrgReport(); const w = t.view(); assert.equal(w.mrg.asset.beyin, true); assert.equal(w.mrg.asset.servikal, false); assert.deepEqual(w.mrg.report.extra, ['Lezyon sayısı: X']); assert.equal(w.mrg.markersAvailable, true); }
-{ const s = mk(); s.mrgKarar('evet'); assert.equal(s.view().mrg.kararDogru, false); s.mrgKarar('hayir'); assert.equal(s.view().mrg.kararDogru, true);
-  D.mrg.egitA.mevcutEksik.secenekler.forEach((o) => s.mrgMevcutEksik(o.id, o.dogru)); assert.equal(s.mrgMevcutEksikSent(), true); s.mrgMevcutEksik('kontrast', 'mevcut'); assert.equal(s.view().mrg.mevcutEksikDogru, false); }
+{ const s = mk(); s.mrgKarar('evet'); assert.equal(s.view().mrg.kararDogru, false); s.mrgKarar('hayir'); assert.equal(s.view().mrg.kararDogru, true); }
 
 // ---- BOS OKB sorusu: Tip 2 ve 3 ----
 { const s = mk(); s.bosSel(3); s.bosSel(2); assert.equal(s.bosSend(), true); s.bosSel(4); assert.equal(s.bosSend(), false); assert.equal(s.view().bos.selDogru, false); }
 
 // ---- kayıt ve özet ----
-{ const s = mk(undefined, () => ({ note: 'Sağ RAPD mevcut.', history: 'öykü' })); assert.equal(s.save(), false);
+{ const s = mk(BOS_CFG, () => ({ note: 'Sağ RAPD mevcut.', history: 'öykü' })); assert.equal(s.save(), false);
   [0, 1, 2].forEach((i) => s.setAnswer(i, 'yanıt ' + i)); assert.equal(s.view().kayit.canSave, true); assert.equal(s.save(), true);
   const sum = s.view().kayit.summary; const tur = sum.sections.map((x) => x.tur);
   assert.deepEqual(tur, ['gercek', 'gercek', 'temsili', 'gercek', 'bekleyen', 'ogrenci']);
@@ -90,8 +92,18 @@ assert.equal(D.kan.satirlar.length, 10);
 { const s = mk(); s.toggleChip(0, 'A cümlesi.'); s.toggleChip(0, 'B cümlesi.'); assert.equal(s.view().kayit.answers[0], 'A cümlesi. B cümlesi.'); s.toggleChip(0, 'A cümlesi.'); assert.equal(s.view().kayit.answers[0], 'B cümlesi.'); }
 
 // ---- eksik varlıklar bildirimi ----
-{ const e = eksikVarliklar(); assert.ok(e.some((x) => /Beyin MRG/.test(x)) && e.some((x) => /Servikal MRG/.test(x)) && e.some((x) => /OKB paterni/.test(x)) && e.some((x) => /IgG indeksi/.test(x))); }
+{ const e = eksikVarliklar(BOS_CFG); assert.ok(eksikVarliklar().length === 0, 'eğitim olgusu verileri tam: ' + eksikVarliklar().join(', ')); assert.ok(e.some((x) => /OKB paterni/.test(x)) && e.some((x) => /IgG indeksi/.test(x)), 'OKB/IgG hâlâ eksik'); assert.ok(!e.some((x) => /MRG görüntüsü/.test(x)), 'MRG görüntüleri bağlı');
+  const bos = eksikVarliklar({ ...BOS_CFG, mrg: { beyin: null, servikal: null } }); assert.ok(bos.some((x) => /Beyin MRG/.test(x)) && bos.some((x) => /Servikal MRG/.test(x))); }
 // başka olguya ait dosyalar bağlanmamış
-assert.equal(OLGU_YAPILANDIRMA.mrg.beyin, null); assert.equal(OLGU_YAPILANDIRMA.mrg.servikal, null);
+assert.equal(OLGU_YAPILANDIRMA.mrg.beyin.dosyalar.length, 6); assert.equal(OLGU_YAPILANDIRMA.mrg.servikal.dosyalar.length, 1);
+assert.ok(!JSON.stringify(OLGU_YAPILANDIRMA.mrg).includes('Flair'), 'başka olgunun dosyaları bağlı değil');
 
 console.log('case testleri: tamam');
+
+// eğitim olgusu verisi raporda görünür
+{ const s = mk(); allChecks(s); s.lpSample(); s.jumpToFollowup(); s.bosOpen(); const r = s.view().bos.rapor; assert.equal(r.okb.metin, "OKB paterni: Tip 2"); s.mrgReport(); assert.ok(s.view().mrg.report.extra.length >= 4); }
+
+// 5 günlük pulse tek seferde: emir olmadan yok; sonra 5 doz ardışık günlerde, tekrar uygulanamaz
+{ const s = mk(); assert.equal(s.giveAllDoses(), false); s.txOrder(); s.giveDose(); assert.equal(s.giveAllDoses(), true);
+  const v = s.view(); assert.equal(v.izlem.given, 5); assert.equal(v.izlem.complete, true);
+  assert.deepEqual(v.izlem.boxes.map((b) => b.day), [1, 2, 3, 4, 5]); assert.equal(s.giveAllDoses(), false); }

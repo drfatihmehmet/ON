@@ -8,8 +8,9 @@ const CARD = {
   ipucu: ['#e04040', '#ff8a8a'], uyari: ['#7cc4ff', '#7cc4ff'], rapor: ['#7cc4ff', '#7cc4ff'], aciklama: ['#8f9bb0', '#c9d1de'], istem: ['#0070C0', '#7cc4ff'],
 };
 
-export function createS3Panels({ CanvasPanel, C, rr }, { store3, viewer, app, test }) {
+export function createS3Panels({ CanvasPanel, C, rr }, { store3, viewer, app, test, n = 3, adapter = null }) {
   const D = store3.data;
+  const A = adapter || { buildModel: (v) => buildModel(v, store3, viewer), perform: (id, fx) => perform(store3, viewer, id, fx) };
   const page = { rctx: 0, lcards: 0, ltable: 0 };
   let lastKey = '';
 
@@ -48,9 +49,9 @@ export function createS3Panels({ CanvasPanel, C, rr }, { store3, viewer, app, te
         const body = w.list?.length && w.kind !== 'rapor' ? w.list.map((s) => '• ' + s).join('  ') : w.kind === 'yanit' ? '“' + w.text + '”' : w.text;
         const wt = w.kind === 'yanit' || w.kind === 'bulgu' ? 600 : 400, bs = 24;
         const title = (w.title || D.kartTurleri[w.kind].baslik).toUpperCase();
-        const bh = ui.height(body, inner, bs, wt, 1.28), hh = bh + 56;
+        const bh = ui.height(body, inner, bs, wt, 1.28) + (w.kaynak ? ui.height(w.kaynak, inner, 17, 400, 1.3) + 4 : 0), hh = bh + 56;
         if (draw) { rr(g, x, y, W, hh, 14); g.fillStyle = '#000'; g.fill(); g.lineWidth = 2; g.strokeStyle = C.line; g.stroke(); g.fillStyle = bar; g.fillRect(x, y + 6, 8, hh - 12);
-          ui.wrap(title, x + 26, y + 12, inner, 18, kc, 700); ui.wrap(body, x + 26, y + 38, inner, bs, C.text, wt, 1.28); }
+          ui.wrap(title + (w.rozet ? '  ·  ' + w.rozet : ''), x + 26, y + 12, inner, 18, kc, 700); const ye = ui.wrap(body, x + 26, y + 38, inner, bs, C.text, wt, 1.28); if (w.kaynak) ui.wrap(w.kaynak, x + 26, ye + 2, inner, 17, C.dim, 400); }
         return hh + 12;
       }
       default: return 0;
@@ -86,14 +87,14 @@ export function createS3Panels({ CanvasPanel, C, rr }, { store3, viewer, app, te
   };
 
   let M = null; // son model
-  const model = () => { const v = store3.view(); M = buildModel(v, store3, viewer); const key = v.active + '|' + M.left.kind + '|' + v.mrg.tab; if (key !== lastKey) { lastKey = key; page.rctx = page.lcards = page.ltable = 0; } return { v, M }; };
+  const model = () => { const v = store3.view(); M = A.buildModel(v); const key = v.active + '|' + M.left.kind + '|' + (v.mrg ? v.mrg.tab : ''); if (key !== lastKey) { lastKey = key; page.rctx = page.lcards = page.ltable = 0; } return { v, M }; };
 
   // ================= SOL: görünüm (MRG / tablo / önceki muayene) + kartlar =================
   const left = new CanvasPanel('s3sol', 1.3, 1.75, (ui, g, w, h) => {
     const { v, M } = model(); ui.bg();
     const pad = 24, W = w - pad * 2, vh = 560;
     g.save(); g.beginPath(); g.roundRect(pad, pad, W, vh, 16); g.clip(); g.fillStyle = '#000'; g.fillRect(pad, pad, W, vh);
-    if (M.left.kind === 'mrg') {
+    if (M.left.kind === 'mrg' && viewer) {
       const tab = v.mrg.tab; drawMrg(g, pad, pad, W, vh, { viewer, tab, slice: v.mrg.slice[tab], v, data: D, test });
     } else if (M.left.kind === 'lab') {
       const L = M.left, rows = [...L.rows, ...(L.extra || []).map((x) => [x.ad, x.durum, ''])];
@@ -122,14 +123,15 @@ export function createS3Panels({ CanvasPanel, C, rr }, { store3, viewer, app, te
     const { v, M } = model(); ui.bg(C.blue);
     const pad = 32, W = w - pad * 2; let y = 28;
     ui.wrap(D.panelBaslik, pad, y + 8, 420, 36, C.text, 700);
-    ui.button('back3', w - pad - 470, y, 470, 58, D.geriDugme, { size: 24, padL: 18 }); y += 74;
-    ui.wrap(`${M.time.label}: ${M.time.day}`, pad + 4, y + 14, 460, 28, C.focus, 700);
-    ui.button('s3:day', w - pad - 470, y, 470, 58, M.time.next, { size: 26, padL: 18 }); y += 72;
+    ui.button('back', w - pad - 470, y, 470, 58, D.geriDugme, { size: 24, padL: 18 }); y += 74;
+    if (M.time) { ui.wrap(`${M.time.label}: ${M.time.day}`, pad + 4, y + 14, 460, 28, C.focus, 700);
+      y += 44; }
     M.ops.forEach((o, i) => {
       ui.button('s3:op:' + o.id, pad, y, W, 78, `${i + 1}. ${o.ad}`, { size: 23, padL: 18, padR: o.status ? 210 : 14, badge: o.status || '', badgeColor: /Sonuçlandı|Doz/.test(o.status) ? C.ok : C.warn, fill: o.on ? '#06143a' : undefined, stroke: o.on ? C.focus : undefined });
       y += 84;
     });
-    ui.button('s3:op:kayit', pad, y, W, 64, D.kayit.dugme, { size: 24, padL: 18, fill: v.active === 'kayit' ? '#06143a' : undefined, stroke: v.active === 'kayit' ? C.focus : undefined }); y += 78;
+    (M.extraOps || []).forEach((o) => { ui.button('s3:op:' + o.id, pad, y, W, 64, o.ad, { size: 24, padL: 18, fill: o.on ? '#06143a' : undefined, stroke: o.on ? C.focus : undefined }); y += 74; });
+    y += 4;
     g.fillStyle = C.line; g.fillRect(pad, y, W, 2); y += 14;
     const items = M.widgets.filter((x) => x.t !== 'card');
     const avail = h - y - 78;
@@ -139,11 +141,11 @@ export function createS3Panels({ CanvasPanel, C, rr }, { store3, viewer, app, te
   });
 
   function act(id, fx) {
-    if (id === 'back3') { app.goto(2); return; }
+    if (id === 'back') { app.goto(n - 1); return; }
     if (id.startsWith('pg:')) { const [, k, d] = id.split(':'); page[k] = Math.max(0, page[k] + Number(d)); left.dirty = right.dirty = true; return; }
-    if (id.startsWith('s3:')) perform(store3, viewer, id.slice(3), fx);
+    if (id.startsWith('s3:')) A.perform(id.slice(3), fx);
   }
   // her karede: MRG videosu / ölçüm zamanı için yeniden çiz
-  function tick() { if (store3.view().active === 'mrg') { left.dirty = true; if (viewer.isVideo(store3.view().mrg.tab)) right.dirty = true; } }
+  function tick() { if (viewer && store3.view().active === 'mrg') { left.dirty = true; if (viewer.isVideo(store3.view().mrg.tab)) right.dirty = true; } }
   return { left, right, act, tick };
 }

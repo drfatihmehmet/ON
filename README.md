@@ -36,6 +36,18 @@ Tarayıcı: http://localhost:8080 · Testler: `npm test` (durum mantığı; Sahn
 Dev: `?sahne=3` (öncekileri atlar). MRG görüntüleyici denemesi: `?sahne=3&mrgtest=1` — **test deseni** yükler, hastaya ait değildir ve arayüzde etiketlenir.
 MRG bağlamak için `scene03-config.js` içindeki `mrg.beyin` / `mrg.servikal` alanlarını doldurun (örn. `{ tur: 'video', dosya: 'assets/mrg/beyin.mp4' }` veya `{ tur: 'kesit', dosyalar: [...] }`).
 
+## Sahne 04–06 — Tanısal sentez, DMT seçimi, DMF izlemi
+Kaynak olgu seyri (`MS Eğitim Olgusu ON/MS_Senaryosu_Claude_Tam_Proje_v2.md`, Aşama 6–8) ve klasördeki makaleler (R01–R10, R16, R17) esas alınmıştır; başka olgunun (kadın) laboratuvar değerleri aktarılmamıştır. MRG görüntüleri (assets/mrg/) kaynak klasördeki Flair*.png / Cervical MRI.png dosyalarıdır ve bu eğitim olgusu için bilinçli olarak kullanılmıştır.
+
+**Eğitim olgusu verisi (KURGU):** Bu bir eğitim simülasyonudur. scene03-config.js içindeki olgu değerleri (MRG rapor eki, lezyon bölgeleri, DIT/CVS/PRL, OKB Tip 2, IgG indeksi, AQP4/MOG, kontrol görme, JCV, lenfosit) klinik tabloyla ve 2024 McDonald ile tutarlı olacak biçimde eğitim amaçlı kurgulanmıştır (kurgu: true → KURGU rozeti). Bir alan null yapılırsa uygulama onu "girilmedi" gösterir ve normal/negatif saymaz.
+| Dosya | Görev |
+|---|---|
+| `src/ds-engine.js` | Karar sahnesi motoru + 2024 McDonald mantığı (`mcdonald()`; IgG indeksi girdi değildir) |
+| `src/scene04-data.js`, `scene05-data.js`, `scene06-data.js` | Sahne tanımları (veri): kartlar kaynak/rozet taşır (R09 §, R01 Panel, C kodu) |
+| `src/scene03-config.js` | Eğitmen alanları: `tani` (bölgeler, DIT, CVS, kFLC, AQP4/MOG), `dmt` (JCV, aile planı, tercih), `izlem` |
+
+Her sahnede gezinme çubuğu (sağ üst, 1–6) ile istenen sahneye geçilir; normal akışta bir sonraki sahne, önceki sahnenin kaydı yapılınca açılır. Dev: `?sahne=4|5|6`.
+
 ## Arayüz kuralları
 - Tüm paneller ve kartlar siyah zeminlidir (beyaz/açık zemin yok); renk yalnızca kenar çubuğu ve etiketlerde.
 - Sahne 01'de "Öykü notları" ve "Eğitici not" tek **Notlar** panelinde, yana kayan sayfalar olarak birleşiktir (sekme, ok, kaydırma/klavye ←→; VR'de sekme + ‹ › düğmeleri ve kayma animasyonu).

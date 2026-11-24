@@ -114,7 +114,7 @@ function pupils(g, w, h, v, data) {
   eyes(g, w / 2, h * 0.5, u, { pup: v.size, lit: v.lit, labelSize: Math.max(15, u * 0.3) });
   const info = v.lit ? (v.lit === 'sol' ? 'Işık: hastanın solunda' : 'Işık: hastanın sağında') : 'Ortam loş · hasta uzağa bakıyor';
   text(g, info, w / 2, h * 0.09, { size: Math.max(15, h * 0.055), weight: 700, align: 'center', color: v.lit ? '#ffe58a' : '#8f9bb0', base: 'middle' });
-  text(g, data.pupilla.gorselAltyazi, w / 2, h * 0.96, { size: Math.max(12, h * 0.042), align: 'center', color: '#8f9bb0', style: 'italic' });
+  text(g, data.pupilla.gorselAltyazi, w / 2, h * 0.96, { size: Math.max(13, h * 0.042), align: 'center', color: '#8f9bb0', style: 'italic' });
 }
 
 // ---- fundus (şema): sağ göz; disk nazalde (ekranın sağında), makula temporalde (solunda) ----
@@ -146,10 +146,10 @@ function fundus(g, w, h, data) {
   g.strokeStyle = '#222'; g.lineWidth = 6; g.beginPath(); g.arc(cx, cy, R, 0, Math.PI * 2); g.stroke();
   // etiketler
   const sz = Math.max(13, h * 0.05);
-  const lab = (s, x, y, tx, ty, align) => { g.strokeStyle = '#7cc4ff'; g.lineWidth = 2; g.beginPath(); g.moveTo(x, y); g.lineTo(tx, ty); g.stroke(); text(g, s, tx + (align === 'right' ? -6 : 6), ty, { size: sz, weight: 700, align, base: 'middle', color: '#7cc4ff' }); };
+  const lab = (s, x, y, tx, ty, align) => { font(g, sz, 700); const tw = g.measureText(s).width + 12; tx = align === 'right' ? Math.max(tx, tw + 4) : Math.min(tx, w - tw - 4); g.strokeStyle = '#7cc4ff'; g.lineWidth = 2; g.beginPath(); g.moveTo(x, y); g.lineTo(tx, ty); g.stroke(); text(g, s, tx + (align === 'right' ? -6 : 6), ty, { size: sz, weight: 700, align, base: 'middle', color: '#7cc4ff' }); };
   lab('Makula (temporal)', mx, my, w * 0.02 + 6 + sz * 7, h * 0.12, 'right');
   lab('Optik disk (nazal)', dx, dy, w * 0.98 - sz * 7.5, h * 0.12, 'left');
-  text(g, data.fundus.gorselAltyazi, w / 2, h * 0.975, { size: Math.max(12, h * 0.043), align: 'center', color: '#c9d1de', style: 'italic' });
+  text(g, data.fundus.gorselAltyazi, w / 2, h * 0.975, { size: Math.max(13, h * 0.043), align: 'center', color: '#c9d1de', style: 'italic' });
   text(g, 'Hastanın sağ gözü', w / 2, h * 0.04, { size: sz, weight: 700, align: 'center', base: 'middle', color: '#dbe6ff' });
 }
 
@@ -178,7 +178,7 @@ export function drawOkb(g, w, h, tip, etiket) {
   const lw = w * 0.28, top = h * 0.2, lh = h * 0.62, cols = [[w * 0.2, 'Serum', 'serum'], [w * 0.56, 'BOS', 'bos']];
   const spec = OKB_BANDS[tip] || OKB_BANDS[1];
   for (const [x, name, key] of cols) {
-    g.strokeStyle = '#22345c'; g.lineWidth = 2; g.beginPath(); g.roundRect(x, top, lw, lh, 10); g.stroke();
+    g.strokeStyle = '#3a5288'; g.lineWidth = 2; g.beginPath(); g.roundRect(x, top, lw, lh, 10); g.stroke();
     text(g, name, x + lw / 2, top - h * 0.05, { size: Math.max(14, h * 0.07), weight: 700, align: 'center', color: '#dbe6ff' });
     for (const p of spec[key]) {
       const common = key === 'bos' && spec.serum.includes(p), mono = tip === 5;
@@ -188,8 +188,8 @@ export function drawOkb(g, w, h, tip, etiket) {
     }
   }
   text(g, `Tip ${tip}`, w / 2, h * 0.07, { size: Math.max(16, h * 0.075), weight: 700, align: 'center', color: '#fff', base: 'middle' });
-  text(g, 'Turuncu: yalnız BOS’ta görülen bant', w / 2, h * 0.9, { size: Math.max(12, h * 0.045), align: 'center', color: '#ffb347' });
-  text(g, etiket, w / 2, h * 0.965, { size: Math.max(12, h * 0.045), align: 'center', color: '#c9d1de', style: 'italic' });
+  text(g, 'Turuncu: yalnız BOS’ta görülen bant', w / 2, h * 0.9, { size: Math.max(13, h * 0.045), align: 'center', color: '#ffb347' });
+  text(g, etiket, w / 2, h * 0.965, { size: Math.max(13, h * 0.045), align: 'center', color: '#c9d1de', style: 'italic' });
 }
 
 // ---- IgG indeksi formülü: kesirler okunacak biçimde ----

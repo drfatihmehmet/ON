@@ -24,7 +24,6 @@ export const SAHNE_03 = {
   },
 
   zaman: {
-    gunDugme: 'Sonraki güne geç',
     gunEtiket: 'Simülasyon günü',
     kontrolEylem: 'İki hafta sonraki kontrole geç',
     kontrolGun: 14,
@@ -90,19 +89,8 @@ export const SAHNE_03 = {
         'Lezyonların yerleşimini, morfolojisini ve varsa kontrastlanmasını ayrı ayrı inceleyin.',
         'Periventriküler, kortikal/jukstakortikal, infratentoryal ve spinal lezyonlar MS için tipik anatomik bölgelerdir. 2024 McDonald revizyonunda optik sinir, uygun objektif kanıtla beşinci anatomik bölge olarak değerlendirilebilir.',
         'Aynı incelemede kontrast tutan ve tutmayan tipik lezyonların birlikte bulunması veya takip MRG’sinde yeni tipik lezyon gelişmesi zamanda yayılımı destekleyebilir.',
-        'Bu hastada “beyin ve servikal plaklar var” ifadesinden kontrastlanma, zamanda yayılım veya kesin MS tanısı çıkarılamaz. Hangi bilginin mevcut, hangisinin eksik olduğunu ayırt edin.',
+        'Bu olguda lezyonların yerleşimi, kontrastlanması ve zamanda yayılım için rapor ekindeki verilere bakın.',
       ],
-      mevcutEksik: {
-        baslik: 'Bu olguda hangi bilgi mevcut, hangisi eksik?',
-        secenekler: [
-          { id: 'plak', ad: 'Beyin ve servikal omurilikte MS ile uyumlu plaklar', dogru: 'mevcut' },
-          { id: 'kontrast', ad: 'Kontrastlanma durumu', dogru: 'eksik' },
-          { id: 'zaman', ad: 'Lezyonların oluşma zamanı (zamanda yayılım)', dogru: 'eksik' },
-          { id: 'ms', ad: 'Kesin MS tanısı', dogru: 'eksik' },
-        ],
-        dogruGeri: 'Doğru ayrım: Yalnızca MS ile uyumlu plakların varlığı bildirilmiştir; kontrastlanma, zamanda yayılım ve kesin tanı bu rapordan çıkarılamaz.',
-        yanlisGeri: 'Bazı kalemler yanlış gruplandı. Raporun yalnızca neyi bildirdiğine yeniden bakın.',
-      },
     },
     egitB: {
       baslik: 'Ayırıcı tanı için hangi örüntülere bakarım?',
@@ -189,9 +177,9 @@ export const SAHNE_03 = {
       ],
     },
     baslatDugme: 'Tedaviyi başlat',
-    onKartMetni: 'Uygun ve erişilebilirse başlangıç MRG’si ve gerekli örnekler ilk dozdan önce planlanabilir. Bu bekleme, tedaviye başlamak için zorunlu koşul değildir.',
+    onKartMetni: 'Uygun ve erişilebilirse başlangıç MRG’si (orbita dahil) ve gerekli örnekler ilk dozdan önce planlanabilir. Serum AQP4-IgG ve MOG-IgG örneğini ilk steroid dozundan önce alın: steroid, PLEX veya IVIG sonrası yanlış negatiflik olabilir. Bu bekleme, tedaviye başlamak için zorunlu koşul değildir.',
     amacDugme: 'Bu tedavinin amacı nedir?',
-    amac: 'Bu olguda yüksek doz kortikosteroid, akut optik nörit sonrasında görsel iyileşmeyi hızlandırmak için veriliyor. Hastalık düzenleyici uzun dönem tedavi kararı ayrı bir değerlendirmedir.',
+    amac: 'Bu olguda yüksek doz kortikosteroid, akut optik nörit sonrasında görsel iyileşmeyi hızlandırmak için veriliyor; uzun dönem görme sonucunu değiştirmez (ONTT). Biyoeşdeğer yüksek doz oral seçenek (günde 1.250 mg prednizon veya 1.000–1.250 mg oral metilprednizolon, 3–5 gün) IV ile eşdeğer bulunmuştur. Tek başına düşük doz oral prednizon (1 mg/kg) önerilmez: ONTT’de nüks riskini artırmıştır. Sonrasında oral azaltma bireysel değerlendirilir. Hastalık düzenleyici uzun dönem tedavi kararı ayrı bir değerlendirmedir.',
     izlemBaslik: 'Tedavi öncesi ve sırasında kısa izlem',
     izlemMaddeleri: [
       { id: 'tansiyon', ad: 'Kan basıncı' },
@@ -208,7 +196,8 @@ export const SAHNE_03 = {
     doz: 5,
     kutu: (i) => `${i}. gün · 1 g IV`,
     uygulaDugme: 'Dozu uygula',
-    bugunVar: 'Bu gün için doz zaten uygulandı. Bir sonraki doz için sonraki güne geçin.',
+    tumDugme: 'Beş gün boyunca 1000 mg/gün metilprednizolon tedavisi başla',
+    bugunVar: 'Bu gün için doz zaten uygulandı.',
     planli: 'Planlandı',
     bekliyor: 'Bugün uygulanabilir',
     uygulandi: 'Doz uygulandı',
@@ -216,7 +205,7 @@ export const SAHNE_03 = {
     kontrolEtiket: 'Kontrol görme keskinliği: ',
     kontrolYok: 'Henüz kaydedilmedi',
     yetersizDugme: 'Belirgin kötüleşme veya yetersiz yanıt',
-    yetersiz: 'Belirgin kötüleşme ya da yetersiz yanıtta nöro-oftalmolojik yeniden değerlendirme yapılır, alternatif tanılar gözden geçirilir ve ağır steroid-refrakter olgularda uzman ekipçe kurtarma tedavisi değerlendirilebilir.',
+    yetersiz: 'Belirgin kötüleşme ya da yetersiz yanıtta nöro-oftalmolojik yeniden değerlendirme yapılır, alternatif tanılar (NMOSD, MOGAD, enfeksiyöz/infiltratif, kompresif) gözden geçirilir. Ağır, steroide yanıtsız optik nöritte terapötik plazma değişimi (PLEX; genellikle 5–7 seans) uzman ekipçe değerlendirilir; erken başlanması yanıtı artırır (Brochet 2020; MENACTRIMS 2023).',
     tedaviYok: 'Önce “Akut tedaviyi başlat” eylemiyle tedaviyi başlatın.',
   },
 

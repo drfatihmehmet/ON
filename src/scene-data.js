@@ -10,8 +10,8 @@
 //  sorular[].ozet      : öykü özeti paragrafında kullanılan cümle (yalnız sorulmuşsa kullanılır)
 //  kosullar            : arayüz öğelerinin açılma koşulları
 //
-// ÜRETİLMEMİŞ VERİ: eşlik eden belirtiler, ağrının göz hareketleriyle ilişkisi, görme keskinliği,
-// muayene bulguları ve tetkikler bu sahnede verilmez. Aşağıda `verilmeyenler` yalnız geliştirici
+// Eğitim simülasyonu: ağrının göz hareketiyle ilişkisi ve eşlik eden yakınmalar eğitim amaçlı kurgu olarak eklendi.
+// Görme keskinliği, muayene bulguları ve tetkikler bu sahnede verilmez. Aşağıda `verilmeyenler` yalnız geliştirici
 // içindir; arayüzde "normal/negatif" olarak gösterilmez.
 
 export const SAHNE_01 = {
@@ -60,6 +60,27 @@ export const SAHNE_01 = {
         { tur: 'bilgi', etiket: 'Görmenin niteliği', metin: 'Sağ gözde “buğulu cam” benzetmesiyle tarif edilen bulanık görme.' },
       ],
       ozet: 'Görmeyi “buğulu bir camın arkasından bakmak” gibi tarif ediyor.',
+    },
+    {
+      id: 'agri',
+      teori: "Göz hareketiyle artan periorbital ağrı tipik optik nöritte olguların yaklaşık %90’ında bulunur ve klinik ON ölçütünün bir bileşenidir. Ağrısız ya da çok şiddetli, uykudan uyandıran ağrı atipik bir özelliktir ve iskemik, kompresif veya NMOSD/MOGAD ilişkili nedenleri akla getirir.",
+      soru: 'Ağrınız göz hareketleriyle değişiyor mu?',
+      yanit: 'Evet, gözümü yanlara ya da yukarı çevirince artıyor; gözümün arkasında bir sızı gibi.',
+      notlar: [
+        { tur: 'bilgi', etiket: 'Ağrının özelliği', metin: 'Sağ göz arkasında, göz hareketleriyle artan sızı.' },
+      ],
+      ozet: 'Ağrı sağ göz arkasında ve göz hareketleriyle artıyor.',
+    },
+    {
+      id: 'eslik',
+      teori: "Eşlik eden ya da geçmişte fark edilmemiş nörolojik yakınmalar (uyuşma, güçsüzlük, dengesizlik, Lhermitte belirtisi, sıcakla kötüleşme: Uhthoff fenomeni) çok odaklı bir süreci düşündürür. Hastalar hafif yakınmaları çoğu zaman önemsemez; bu nedenle tek tek sorulmalıdır.",
+      soru: 'Uyuşma, güçsüzlük, dengesizlik ya da sıcakta kötüleşme gibi başka bir yakınmanız oldu mu?',
+      yanit: 'Son iki üç aydır merdiven inerken biraz dengesiz hissediyorum, önemsemedim. Sıcak duştan sonra sağ gözüm biraz daha bulanıklaşıyor gibi.',
+      notlar: [
+        { tur: 'bilgi', etiket: 'Eşlik eden yakınma', metin: 'Son 2–3 aydır merdiven inerken hafif dengesizlik.' },
+        { tur: 'bilgi', etiket: 'Sıcakla ilişki', metin: 'Sıcak duş sonrası sağ gözde bulanıklık artıyor.' },
+      ],
+      ozet: 'Son iki üç aydır merdiven inerken hafif dengesizlik fark etmiş; sıcak duştan sonra sağ gözdeki bulanıklık artıyor.',
     },
     {
       id: 'onceki',
@@ -130,8 +151,6 @@ export const SAHNE_01 = {
 
   // Yalnız geliştirici notu — arayüzde gösterilmez, "normal" diye kaydedilmez.
   verilmeyenler: [
-    'eşlik eden belirtiler',
-    'ağrının göz hareketleriyle ilişkisi',
     'görme keskinliği',
     'muayene bulguları',
     'tetkik sonuçları',

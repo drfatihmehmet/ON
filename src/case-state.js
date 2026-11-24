@@ -9,7 +9,7 @@ export function createCaseStore(data, cfg, { prev = () => ({ note: '', history: 
     active: null,
     lab: { opened: false },
     mrg: { tab: 'beyin', slice: { beyin: 0, servikal: 0 }, report: { beyin: false, servikal: false }, viewed: false,
-      eduA: false, eduB: false, orbita: false, mevcutEksik: {}, mevcutEksikSent: false, karar: null, markers: false },
+      eduA: false, eduB: false, orbita: false, karar: null, markers: false },
     lp: { checks: {}, serum: {}, sampleDay: null },
     tx: { q: null, ordered: false, startDay: null, doses: [], purpose: false, poor: false, explain: false, preMon: {}, open: null },
     bos: { reportOpen: false, tip: 2, okbA: false, iggB: false, sel: [], sent: false },
@@ -110,8 +110,7 @@ export function createCaseStore(data, cfg, { prev = () => ({ note: '', history: 
         tab: s.mrg.tab, slice: s.mrg.slice, asset: { beyin: !!cfgOk('beyin'), servikal: !!cfgOk('servikal') },
         reportOpen: s.mrg.report[s.mrg.tab], report: s.mrg.report[s.mrg.tab] ? mrgReport(s.mrg.tab) : null,
         eduA: s.mrg.eduA, eduB: s.mrg.eduB, orbita: s.mrg.orbita,
-        mevcutEksik: s.mrg.mevcutEksik, mevcutEksikSent: s.mrg.mevcutEksikSent,
-        mevcutEksikDogru: mevcutEksikOk(), karar: s.mrg.karar, kararDogru: s.mrg.karar === data.mrg.karar.dogru,
+        karar: s.mrg.karar, kararDogru: s.mrg.karar === data.mrg.karar.dogru,
         markersAvailable: (cfg.isaretler[s.mrg.tab] || []).length > 0, markers: s.mrg.markers,
       },
       lp: {
@@ -129,7 +128,7 @@ export function createCaseStore(data, cfg, { prev = () => ({ note: '', history: 
         open: s.tx.open, boxes: boxes(), given: nDose, today: s.tx.doses.some((d) => d.day === s.day),
         canGive: s.tx.ordered && nDose < data.izlem.doz && !s.tx.doses.some((d) => d.day === s.day),
         complete: nDose >= data.izlem.doz, poor: s.tx.poor,
-        kontrol: cfg.klinik.kontrolGorme || data.izlem.kontrolYok, ordered: s.tx.ordered,
+        kontrol: kontrolMetni(), ordered: s.tx.ordered,
       },
       bos: {
         ready: bosOpenAllowed, reportOpen: s.bos.reportOpen && bosOpenAllowed, rapor: bosRapor,
@@ -142,11 +141,9 @@ export function createCaseStore(data, cfg, { prev = () => ({ note: '', history: 
     };
   }
 
+  // kontrol görme: yalnız 5 doz tamamlandıktan ve kontrol gününe (15. gün) gelindikten sonra gösterilir
+  function kontrolMetni() { return cfg.klinik.kontrolGorme && s.tx.doses.length >= data.izlem.doz && s.day >= 15 ? cfg.klinik.kontrolGorme : data.izlem.kontrolYok; }
   const sameSet = (a, b) => a.length === b.length && b.every((x) => a.includes(x));
-  function mevcutEksikOk() {
-    const o = data.mrg.egitA.mevcutEksik.secenekler;
-    return o.every((x) => s.mrg.mevcutEksik[x.id] === x.dogru);
-  }
 
   function buildSummary() {
     const g = data.kayit.etiketler, p = prev();
@@ -162,7 +159,7 @@ export function createCaseStore(data, cfg, { prev = () => ({ note: '', history: 
     const days = s.tx.doses.map((d) => d.day);
     sections.push({ baslik: 'Akut tedavi', tur: 'gercek', satirlar: [
       s.tx.ordered ? `Metilprednizolon 1 g IV: ${s.tx.doses.length}/${data.izlem.doz} doz uygulandı${days.length ? ` (günler: ${days.join(', ')})` : ''}.` : 'Akut tedavi başlatılmadı.',
-      `${data.izlem.kontrolEtiket}${cfg.klinik.kontrolGorme || data.izlem.kontrolYok}`,
+      `${data.izlem.kontrolEtiket}${kontrolMetni()}`,
     ] });
     const bekl = [];
     if (s.lp.sampleDay == null) bekl.push('BOS/serum OKB ve IgG indeksi: örnek alınmadı.');
@@ -196,8 +193,6 @@ export function createCaseStore(data, cfg, { prev = () => ({ note: '', history: 
     mrgSlice(i, tab = s.mrg.tab) { s.mrg.slice[tab] = Math.max(0, i); emit(); },
     mrgReport() { s.mrg.report[s.mrg.tab] = !s.mrg.report[s.mrg.tab]; emit(); },
     mrgToggle(k) { if (!['eduA', 'eduB', 'orbita', 'markers'].includes(k)) return false; s.mrg[k] = !s.mrg[k]; emit(); return true; },
-    mrgMevcutEksik(id, v) { s.mrg.mevcutEksik[id] = v; s.mrg.mevcutEksikSent = false; emit(); },
-    mrgMevcutEksikSent() { s.mrg.mevcutEksikSent = true; emit(); return mevcutEksikOk(); },
     mrgKarar(a) { if (!data.mrg.karar.secenekler.some((o) => o.id === a)) return false; s.mrg.karar = a; emit(); return true; },
 
     // ---- LP ----
@@ -216,7 +211,15 @@ export function createCaseStore(data, cfg, { prev = () => ({ note: '', history: 
     giveDose() {
       const n = s.tx.doses.length;
       if (!s.tx.ordered || n >= data.izlem.doz || s.tx.doses.some((d) => d.day === s.day)) return false; // aynı gün ikinci doz yok
-      s.tx.doses.push({ day: s.day, monitor: {} }); emit(); return true;
+      s.tx.doses.push({ day: s.day, monitor: {} }); if (s.tx.doses.length < data.izlem.doz) s.day++; // bir sonraki doz ertesi gün; ayrı "sonraki gün" düğmesi yok
+      emit(); return true;
+    },
+    // 5 günlük pulse'ı tek seferde uygular: kalan dozlar ardışık günlere yazılır (günde en fazla bir doz), gün son doza ilerler.
+    giveAllDoses() {
+      if (!s.tx.ordered || s.tx.doses.length >= data.izlem.doz) return false;
+      if (s.tx.doses.some((d) => d.day === s.day)) s.day++;
+      while (s.tx.doses.length < data.izlem.doz) { s.tx.doses.push({ day: s.day, monitor: {} }); if (s.tx.doses.length < data.izlem.doz) s.day++; }
+      emit(); return true;
     },
     openBox(i) { s.tx.open = s.tx.open === i ? null : i; emit(); },
     doseMonitor(i, key) { const d = s.tx.doses[i]; if (!d) return false; d.monitor[key] = !d.monitor[key]; emit(); return true; },

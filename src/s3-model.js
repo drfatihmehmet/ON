@@ -48,13 +48,6 @@ export function buildModel(v, store, viewer) {
     row(btn('toggle:eduA', D.mrg.egitA.baslik, { on: m.eduA, caret: true }));
     if (m.eduA) {
       D.mrg.egitA.maddeler.forEach((t) => card('egitici', t, { title: 'MRG ve tanı' }));
-      h(D.mrg.egitA.mevcutEksik.baslik);
-      D.mrg.egitA.mevcutEksik.secenekler.forEach((o) => {
-        const cur = m.mevcutEksik[o.id];
-        row(btn(`me:${o.id}:mevcut`, `${o.ad} → Mevcut`, { on: cur === 'mevcut' }), btn(`me:${o.id}:eksik`, 'Eksik', { on: cur === 'eksik' }));
-      });
-      row(btn('me:send', 'Yanıtı kontrol et', { primary: true }));
-      if (m.mevcutEksikSent) card(m.mevcutEksikDogru ? 'egitmen' : 'ipucu', m.mevcutEksikDogru ? D.mrg.egitA.mevcutEksik.dogruGeri : D.mrg.egitA.mevcutEksik.yanlisGeri);
     }
     // eğitici B
     row(btn('toggle:eduB', D.mrg.egitB.baslik, { on: m.eduB, caret: true }));
@@ -107,7 +100,9 @@ export function buildModel(v, store, viewer) {
   // ---- 5. günlük doz izlemi ----
   if (v.active === 'izlem') {
     const z = v.izlem;
+    left = { kind: 'infuzyon' };
     if (!z.ordered) p(D.izlem.tedaviYok, 'warn');
+    if (z.ordered && !z.complete) row(btn('doseall', D.izlem.tumDugme, { primary: true }));
     p(`${D.zaman.gunEtiket}: ${v.day}`, 'muted');
     z.boxes.forEach((b, i) => {
       const label = `${b.ad} — ${b.kod === 'uygulandi' ? `${b.durum} (Gün ${b.day})` : b.durum}`;
@@ -175,6 +170,7 @@ export function buildModel(v, store, viewer) {
     if (!v.kayit.canSave) p(D.kayit.ipucu, 'muted');
     if (v.kayit.saved) {
       const s = v.kayit.summary; h(s.baslik);
+      row(btn('goto4', 'Tanısal sentez sahnesine geç', { primary: true }));
       s.sections.forEach((sec) => card(sec.tur === 'temsili' ? 'uyari' : sec.tur === 'bekleyen' ? 'ipucu' : sec.tur === 'ogrenci' ? 'yanit' : 'rapor', sec.satirlar.join(' '), { title: `${sec.baslik} · ${s.etiketler[sec.tur]}`, list: sec.satirlar }));
     }
   }
@@ -183,7 +179,8 @@ export function buildModel(v, store, viewer) {
 
   return {
     ops: D.eylemler.map((e) => ({ id: e.id, ad: e.ad, status: v.status[e.id], on: v.active === e.id })),
-    time: { day: v.day, label: D.zaman.gunEtiket, next: D.zaman.gunDugme },
+    time: { day: v.day, label: D.zaman.gunEtiket },
+    extraOps: [{ id: 'kayit', ad: D.kayit.dugme, on: v.active === 'kayit' }],
     left, widgets: W,
     prev: v.prevCard,
   };
@@ -212,7 +209,6 @@ export function perform(store, viewer, id, frac) {
     case 'scrub': return viewer.seekFrac(tab, frac ?? Number(a));
     case 'rapor': return store.mrgReport();
     case 'toggle': return store.mrgToggle(a);
-    case 'me': return a === 'send' ? store.mrgMevcutEksikSent() : store.mrgMevcutEksik(a, b);
     case 'mk': return store.mrgKarar(a);
     case 'lc': return store.lpCheck(a);
     case 'ls': return store.lpSerum(a);
@@ -223,6 +219,7 @@ export function perform(store, viewer, id, frac) {
     case 'txpm': return store.txPreMon(a);
     case 'box': return store.openBox(Number(a));
     case 'dose': return store.giveDose();
+    case 'doseall': return store.giveAllDoses();
     case 'dm': return store.doseMonitor(Number(a), b);
     case 'bosopen': return store.bosOpen();
     case 'bt': return store.bosToggle(a);

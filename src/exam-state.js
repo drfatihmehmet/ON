@@ -4,7 +4,8 @@ const clamp01 = (x) => Math.max(0, Math.min(1, x));
 const ease = (x) => x * x * (3 - 2 * x);
 
 // ---- yönlendirme ----
-export function createApp({ canLeaveScene1 = () => true, canLeaveScene2 = () => true } = {}) {
+export function createApp({ canLeaveScene1 = () => true, canLeaveScene2 = () => true, gates = {} } = {}) {
+  const gate = { 2: canLeaveScene1, 3: canLeaveScene2, ...gates };
   let scene = 1;
   const listeners = new Set();
   return {
@@ -13,8 +14,7 @@ export function createApp({ canLeaveScene1 = () => true, canLeaveScene2 = () => 
     // force: kullanıcı "Sahne 3'e geç" ile önceki sahneleri atlayabilir
     goto(n, force = false) {
       if (n === scene) return true;
-      if (!force && n >= 2 && !canLeaveScene1()) return false;
-      if (!force && n >= 3 && !canLeaveScene2()) return false;
+      if (!force) for (let k = 2; k <= n; k++) if (gate[k] && !gate[k]()) return false;
       scene = n; listeners.forEach((fn) => fn()); return true;
     },
   };

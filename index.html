@@ -10,6 +10,7 @@
 </head>
 <body>
 <a class="skip" href="#panel">Soru paneline geç</a>
+<nav class="sahne-nav" id="sahne-nav" aria-label="Sahne gezintisi"></nav>
 <main class="app" id="sahne1">
   <section class="stage" aria-labelledby="sahne-baslik">
     <header class="stage-head">
@@ -35,7 +36,6 @@
 
     <div class="actions">
       <button type="button" class="btn" id="btn-vr" hidden>VR’ye gir</button>
-      <button type="button" class="btn ghost" id="btn-skip1">Sahne 3’e geç</button>
       <p class="status" id="status" role="status" aria-live="polite"></p>
     </div>
   </section>
@@ -107,7 +107,6 @@
     <div class="actions">
       <button type="button" class="btn ghost" id="btn-geri"></button>
       <button type="button" class="btn" id="btn-vr2" hidden>VR’ye gir</button>
-      <button type="button" class="btn ghost" id="btn-skip2">Sahne 3’e geç</button>
     </div>
     <details class="oyku" id="s2-oyku-kutu">
       <summary id="s2-oyku-baslik"></summary>
@@ -151,6 +150,14 @@
           <img id="yedek3" alt="Hasta, önden görünüm" hidden>
         </div>
       </div>
+    </div>
+
+    <div id="s3-infuzyon" class="s3-view" hidden>
+      <img src="assets/hasta-infuzyon.jpg" alt="Hasta yatakta, koldaki damar yolundan serum (intravenöz infüzyon) alıyor" style="width:100%;height:auto;display:block;border:1px solid var(--line);border-radius:12px;background:#000">
+    </div>
+
+    <div id="s3-dmf" class="s3-view" hidden>
+      <img src="assets/hasta-dmf.jpg" alt="Hasta koltukta oturuyor; elinde bir kapsül ve su bardağı var, oral dimetil fumarat alıyor" style="width:100%;height:auto;display:block;border:1px solid var(--line);border-radius:12px;background:#000">
     </div>
 
     <div id="s3-mrg" class="s3-view" hidden>

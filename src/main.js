@@ -9,6 +9,11 @@ import { OLGU_YAPILANDIRMA } from './scene03-config.js';
 import { createCaseStore } from './case-state.js';
 import { createMrgViewer } from './mrg-viewer.js';
 import { createUI3 } from './ui3.js';
+import { buildModel, perform } from './s3-model.js';
+import { createDecisionStore } from './ds-engine.js';
+import { SAHNE_04 } from './scene04-data.js';
+import { SAHNE_05 } from './scene05-data.js';
+import { SAHNE_06 } from './scene06-data.js';
 
 const params = new URLSearchParams(location.search);
 const data = SAHNE_01;
@@ -56,8 +61,15 @@ vEl.addEventListener('error', () => { ui.setMedia({ mode: 'yedek' }); store.setV
 vEl.src = videoSrc;
 
 // ---- Sahne 02 ve yönlendirme ----
-const devScene = Number(params.get('sahne')) || 0; // yalnızca geliştirme: önceki sahneleri tamamlamadan aç (?sahne=2|3)
-const app = createApp({ canLeaveScene1: () => devScene >= 2 || store.view().completed, canLeaveScene2: () => devScene >= 3 || exam.view().completed });
+const devScene = Number(params.get('sahne')) || 0; // yalnızca geliştirme: önceki sahneleri tamamlamadan aç (?sahne=2…6)
+const stores = {}; // 4–6: karar sahnesi store'ları
+const app = createApp({ gates: {
+  2: () => devScene >= 2 || store.view().completed,
+  3: () => devScene >= 3 || exam.view().completed,
+  4: () => devScene >= 4 || store3.view().kayit.saved,
+  5: () => devScene >= 5 || stores[4].saved(),
+  6: () => devScene >= 6 || stores[5].saved(),
+} });
 const exam = createExamStore(SAHNE_02, { history: () => (store.view().completed ? store.view().summary : '') });
 
 const ui = createUI(store, patient, { onNext: () => app.goto(2) });
@@ -81,29 +93,64 @@ const cfg3 = mrgTest ? {
 const store3 = createCaseStore(SAHNE_03, cfg3, { prev: () => ({ note: exam.view().note.paragraph, history: store.view().completed ? store.view().summary : '' }) });
 const viewer = createMrgViewer(store3);
 viewer.markers = cfg3.isaretler;
-const ui3 = createUI3(store3, viewer, app, { test: mrgTest });
+const adapter3 = { buildModel: (v) => buildModel(v, store3, viewer), perform: (id, frac) => (id === 'goto4' ? app.goto(4) : perform(store3, viewer, id, frac)) };
+const ui3 = createUI3(store3, viewer, app, { test: mrgTest, adapter: adapter3 });
+const uis = { 3: ui3 };
 exam.subscribe(() => ui3.render()); store.subscribe(() => ui3.render());
-const b3 = document.getElementById('bekleme3');
-b3.muted = true; b3.defaultMuted = true; b3.volume = 0; b3.loop = true;
-const patient3 = { idleEl: b3 };
-b3.addEventListener('error', () => { b3.hidden = true; const y = document.getElementById('yedek3'); y.src = SAHNE_03.video.yedekKare; y.hidden = false; });
-b3.src = SAHNE_03.video.bekleme;
+const videos = {}, scenes = { 3: { store: store3, adapter: adapter3, viewer } };
+function hastaVideo(n) {
+  const el = document.getElementById('bekleme' + n);
+  el.muted = true; el.defaultMuted = true; el.volume = 0; el.loop = true;
+  el.addEventListener('error', () => { el.hidden = true; const y = document.getElementById('yedek' + n); y.src = SAHNE_03.video.yedekKare; y.hidden = false; });
+  el.src = SAHNE_03.video.bekleme; videos[n] = el;
+}
+hastaVideo(3);
 document.getElementById('btn-s3').hidden = true;
 
-for (const id of ['btn-skip1', 'btn-skip2']) document.getElementById(id).addEventListener('click', () => app.goto(3, true));
-const sc = { 1: document.getElementById('sahne1'), 2: document.getElementById('sahne2'), 3: document.getElementById('sahne3') };
-const heads = { 1: 'sahne-baslik', 2: 's2-baslik', 3: 's3-baslik' };
+// ---- Sahne 04–06: karar sahneleri (veri tanımı + ortak motor) ----
+const defs = { 4: SAHNE_04, 5: SAHNE_05, 6: SAHNE_06 };
+const tpl = document.getElementById('sahne3').outerHTML;
+for (const n of [4, 5, 6]) {
+  const html = tpl.replace(/(id|aria-labelledby|aria-controls|for)="s3-/g, '$1="s' + n + '-')
+    .replace('id="sahne3"', 'id="sahne' + n + '"').replace('id="panel3"', 'id="panel' + n + '"')
+    .replace('id="btn-geri3"', 'id="btn-geri' + n + '"').replace('id="btn-vr3"', 'id="btn-vr' + n + '"')
+    .replace('id="bekleme3"', 'id="bekleme' + n + '"').replace('id="yedek3"', 'id="yedek' + n + '"');
+  document.getElementById('sahne' + (n - 1)).insertAdjacentHTML('afterend', html);
+}
+for (const n of [4, 5, 6]) {
+  const def = defs[n];
+  const st = createDecisionStore(def, cfg3, { prev: () => ({ note: exam.view().note.paragraph }), onNext: n < 6 ? () => app.goto(n + 1) : null });
+  stores[n] = st;
+  const adapter = { buildModel: () => st.model(), perform: (id) => st.perform(id) };
+  uis[n] = createUI3(st, null, app, { n, adapter });
+  scenes[n] = { store: st, adapter };
+  hastaVideo(n);
+  exam.subscribe(() => uis[n].render());
+}
+// Sahne geçişi gezinme çubuğu (her zaman kullanılabilir)
+const nav = document.getElementById('sahne-nav');
+nav.innerHTML = [1, 2, 3, 4, 5, 6].map((n) => '<button type="button" class="nb" data-n="' + n + '" aria-label="Sahne ' + n + '">' + n + '</button>').join('');
+nav.addEventListener('click', (e) => { const b = e.target.closest('[data-n]'); if (b) app.goto(Number(b.dataset.n), true); });
+
+const sc = { 1: document.getElementById('sahne1'), 2: document.getElementById('sahne2') };
+const heads = { 1: 'sahne-baslik', 2: 's2-baslik' };
+for (const n of [3, 4, 5, 6]) { sc[n] = document.getElementById('sahne' + n); heads[n] = 's' + n + '-baslik'; }
+const SAHNE_SAYISI = 6;
 function applyScene() {
-  for (const k of [1, 2, 3]) sc[k].hidden = app.scene !== k;
+  for (let k = 1; k <= SAHNE_SAYISI; k++) sc[k].hidden = app.scene !== k;
   document.title = 'Klinik Simülasyon — Sahne 0' + app.scene;
+  nav.querySelectorAll('.nb').forEach((b) => (Number(b.dataset.n) === app.scene ? b.setAttribute('aria-current', 'page') : b.removeAttribute('aria-current')));
   if (app.scene !== 1) iEl.pause(); else if (store.view().idle) iEl.play().catch(() => {});
-  if (app.scene === 3) { b3.play?.().catch(() => {}); ui3.render(); } else { b3.pause?.(); viewer.pause(); }
+  for (const k of Object.keys(videos)) { if (Number(k) === app.scene) videos[k].play?.().catch(() => {}); else videos[k].pause?.(); }
+  if (app.scene !== 3) viewer.pause();
+  if (uis[app.scene]) uis[app.scene].render();
   if (app.scene === 2) ui2.render();
   document.getElementById(heads[app.scene]).focus();
   window.scrollTo(0, 0);
 }
 app.subscribe(applyScene);
 if (devScene >= 2) app.goto(devScene);
+applyScene();
 
 function loadFallback() {
   const img = document.getElementById('yedek');
@@ -117,7 +164,7 @@ let vrMod = null, vrScene = null;
 async function getVR() {
   if (!vrScene) {
     vrMod = await import('./vr.js');
-    vrScene = vrMod.createVRScene({ store, exam, app, store3, viewer }, patient, { patient2, patient3, fallbackImage: data.video.yedekKare, firstFrame: data.video.ilkKare });
+    vrScene = vrMod.createVRScene({ store, exam, app, scenes }, patient, { patient2, patients: videos, fallbackImage: data.video.yedekKare, firstFrame: data.video.ilkKare });
     window.__sahne.vr = vrScene; // hata ayıklama / test
   }
   return vrScene;
@@ -137,10 +184,10 @@ async function getVR() {
     const enterVR = async () => {
       const vr = await getVR();
       const xr = mod.createXRSession(vr, { onEnd: () => {} });
-      try { await xr.enter(); } catch (e) { const t = app.scene === 2 ? ui2.el.bitti : app.scene === 3 ? document.getElementById('btn-geri3') : ui.el.status; t.textContent = 'VR oturumu başlatılamadı: ' + (e.message || e); }
+      try { await xr.enter(); } catch (e) { const t = app.scene === 2 ? ui2.el.bitti : app.scene >= 3 ? document.getElementById('btn-geri' + app.scene) : ui.el.status; t.textContent = 'VR oturumu başlatılamadı: ' + (e.message || e); }
     };
-    for (const id of ['btn-vr', 'btn-vr2', 'btn-vr3']) { const b = document.getElementById(id); b.hidden = false; b.addEventListener('click', enterVR); }
+    for (const id of ['btn-vr', 'btn-vr2', 'btn-vr3', 'btn-vr4', 'btn-vr5', 'btn-vr6']) { const b = document.getElementById(id); b.hidden = false; b.addEventListener('click', enterVR); }
   }
 })();
 
-window.__sahne = { store, data, app, exam, store3, viewer, ui3, cfg3 }; // yalnızca hata ayıklama / test
+window.__sahne = { store, data, app, exam, store3, viewer, ui3, cfg3, stores, uis }; // yalnızca hata ayıklama / test

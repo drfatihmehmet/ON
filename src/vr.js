@@ -97,7 +97,7 @@ function drawCards(ui, g, cards, kartTurleri, x, y, w, size = 26) {
   return y;
 }
 
-export function createVRScene({ store, exam, app, store3, viewer }, video, { patient2, patient3, fallbackImage, firstFrame } = {}) {
+export function createVRScene({ store, exam, app, scenes }, video, { patient2, patients, fallbackImage, firstFrame } = {}) {
   const data = store.data;
   const d2 = exam.data;
   const scene = new THREE.Scene();
@@ -113,7 +113,7 @@ export function createVRScene({ store, exam, app, store3, viewer }, video, { pat
   const VH = 1.9, VW = VH * 16 / 9;
   const vtex = new THREE.VideoTexture(video.el); vtex.colorSpace = THREE.SRGBColorSpace;
   const itex = new THREE.VideoTexture(video.idleEl); itex.colorSpace = THREE.SRGBColorSpace;
-  const itex3 = new THREE.VideoTexture(patient3.idleEl); itex3.colorSpace = THREE.SRGBColorSpace;
+  const itexN = {}; for (const n of Object.keys(patients)) { itexN[n] = new THREE.VideoTexture(patients[n]); itexN[n].colorSpace = THREE.SRGBColorSpace; }
   const imgTex = (url) => { const t = new THREE.Texture(); t.colorSpace = THREE.SRGBColorSpace;
     if (url) { const i = new Image(); i.onload = () => { t.image = i; t.needsUpdate = true; }; i.src = url; } return t; };
   const firstTex = imgTex(firstFrame), lastTex = imgTex(fallbackImage), examTex = imgTex(patient2.imageUrl);
@@ -122,7 +122,7 @@ export function createVRScene({ store, exam, app, store3, viewer }, video, { pat
   function syncScreen() {
     let want;
     if (app.scene === 2) want = examTex;
-    else if (app.scene === 3) want = itex3;
+    else if (app.scene >= 3) want = itexN[app.scene];
     else { const v = store.view(); want = v.videoMissing ? lastTex : v.idle ? itex : v.started ? vtex : firstTex; }
     if (screen.material.map !== want) { screen.material.map = want; screen.material.needsUpdate = true; }
     // Sahne 02 görseli 2:1 ve daha küçük: panellerin arasında yüzler görünür kalsın
@@ -286,18 +286,22 @@ export function createVRScene({ store, exam, app, store3, viewer }, video, { pat
   qPanel.mesh.position.set(R, 1.35, PZ); qPanel.mesh.rotation.y = -YAW;
   examLeft.mesh.position.set(L, 1.3, PZ); examLeft.mesh.rotation.y = YAW;
   examRight.mesh.position.set(R, 1.3, PZ); examRight.mesh.rotation.y = -YAW;
-  const s3 = createS3Panels({ CanvasPanel, C, rr }, { store3, viewer, app, test: false });
-  s3.left.mesh.position.set(L, 1.3, PZ); s3.left.mesh.rotation.y = YAW;
-  s3.right.mesh.position.set(R, 1.3, PZ); s3.right.mesh.rotation.y = -YAW;
-  const groups = { 1: [refPanel, contentPanel, qPanel], 2: [refPanel, examLeft, examRight], 3: [s3.left, s3.right] };
-  const panels = [refPanel, contentPanel, qPanel, examLeft, examRight, s3.left, s3.right];
+  // Sahne 03–06: aynı bildirimsel modeli çizen sayfalı paneller (her sahne kendi store ve adaptörüyle)
+  const extra = {}; const groups = { 1: [refPanel, contentPanel, qPanel], 2: [refPanel, examLeft, examRight] };
+  const panels = [refPanel, contentPanel, qPanel, examLeft, examRight];
+  for (const [n, sc] of Object.entries(scenes)) {
+    const inst = createS3Panels({ CanvasPanel, C, rr }, { store3: sc.store, viewer: sc.viewer || null, app, test: false, n: Number(n), adapter: sc.adapter });
+    inst.left.mesh.position.set(L, 1.3, PZ); inst.left.mesh.rotation.y = YAW;
+    inst.right.mesh.position.set(R, 1.3, PZ); inst.right.mesh.rotation.y = -YAW;
+    extra[n] = inst; groups[n] = [inst.left, inst.right]; panels.push(inst.left, inst.right);
+  }
   panels.forEach((p) => scene.add(p.mesh));
   const activePanels = () => groups[app.scene] || groups[1];
   function showScene() { const on = new Set(activePanels()); panels.forEach((p) => { p.mesh.visible = on.has(p); p.dirty = true; }); syncScreen(); }
 
   // eylemler → ortak store'lar (masaüstüyle aynı nesneler)
   function act(id, fx) {
-    if (id === 'back3' || id.startsWith('s3:') || id.startsWith('pg:')) { s3.act(id, fx); return; }
+    if (id === 'back' || id.startsWith('s3:') || id.startsWith('pg:')) { extra[app.scene]?.act(id, fx); return; }
     if (id === 'x:s3') { app.goto(3); return; }
     if (id === 'notes') store.toggleNotes();
     else if (id === 'np:0') store.setNotePage(0);
@@ -316,7 +320,7 @@ export function createVRScene({ store, exam, app, store3, viewer }, video, { pat
   }
 
   const markDirty = () => { panels.forEach((p) => (p.dirty = true)); syncScreen(); };
-  store.subscribe(markDirty); exam.subscribe(markDirty); store3.subscribe(markDirty); app.subscribe(showScene);
+  store.subscribe(markDirty); exam.subscribe(markDirty); Object.values(scenes).forEach((sc) => sc.store.subscribe(markDirty)); app.subscribe(showScene);
   showScene();
 
   // ---- ışın (ray) ----
@@ -342,7 +346,7 @@ export function createVRScene({ store, exam, app, store3, viewer }, video, { pat
   }
 
   function update() {
-    if (app.scene === 3) s3.tick();
+    extra[app.scene]?.tick();
     if (app.scene === 1) {
       const tgt = store.view().notePage;
       if (Math.abs(notePos - tgt) > 0.002) { notePos += (tgt - notePos) * 0.22; if (Math.abs(notePos - tgt) <= 0.002) notePos = tgt; contentPanel.dirty = true; }
