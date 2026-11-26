@@ -132,6 +132,8 @@ const nav = document.getElementById('sahne-nav');
 nav.innerHTML = [1, 2, 3, 4, 5, 6].map((n) => '<button type="button" class="nb" data-n="' + n + '" aria-label="Sahne ' + n + '">' + n + '</button>').join('');
 nav.addEventListener('click', (e) => { const b = e.target.closest('[data-n]'); if (b) app.goto(Number(b.dataset.n), true); });
 
+const sonrakiBtn = document.getElementById('btn-sonraki');
+sonrakiBtn.addEventListener('click', () => { if (app.scene < 6) app.goto(app.scene + 1, true); });
 const sc = { 1: document.getElementById('sahne1'), 2: document.getElementById('sahne2') };
 const heads = { 1: 'sahne-baslik', 2: 's2-baslik' };
 for (const n of [3, 4, 5, 6]) { sc[n] = document.getElementById('sahne' + n); heads[n] = 's' + n + '-baslik'; }
@@ -139,6 +141,7 @@ const SAHNE_SAYISI = 6;
 function applyScene() {
   for (let k = 1; k <= SAHNE_SAYISI; k++) sc[k].hidden = app.scene !== k;
   document.title = 'Klinik Simülasyon — Sahne 0' + app.scene;
+  sonrakiBtn.hidden = app.scene >= 6; sonrakiBtn.textContent = 'Sonraki aşama: Sahne ' + (app.scene + 1) + ' →';
   nav.querySelectorAll('.nb').forEach((b) => (Number(b.dataset.n) === app.scene ? b.setAttribute('aria-current', 'page') : b.removeAttribute('aria-current')));
   if (app.scene !== 1) iEl.pause(); else if (store.view().idle) iEl.play().catch(() => {});
   for (const k of Object.keys(videos)) { if (Number(k) === app.scene) videos[k].play?.().catch(() => {}); else videos[k].pause?.(); }

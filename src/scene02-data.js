@@ -53,7 +53,7 @@ export const SAHNE_02 = {
     sureMs: 2800,
     sonuc: [
       { tur: 'bulgu', metin: 'Sağ göz görme keskinliği: 20/200 (ondalık 0,1).' },
-      { tur: 'egitici', metin: '20/200, standart görmeye sahip bir kişinin 200 feet mesafeden ayırt edebildiği bir optotipi, hastanın 20 feet mesafeden ayırt edebildiğini ifade eder.' },
+      { tur: 'egitici', metin: '20/200, standart görmeye sahip bir kişinin 200 feet mesafeden ayırt edebildiği bir optotipi, hastanın 20 feet mesafeden ayırt edebildiğini ifade eder. Ondalık karşılığı 0,1’dir; ON’de görme keskinliği hafif bulanıklıktan ışık algısının kaybına kadar geniş bir aralıkta değişebilir, ancak çoğu hastada 20/40 ile 20/200 arasındadır. Başlangıçtaki keskinlik, uzun dönem toparlanmayı kısmen öngörür: Optic Neuritis Treatment Trial’da (ONTT) başlangıç görmesi çok düşük olan gözlerde bile hastaların büyük çoğunluğunda 1 yıl içinde 20/40 veya daha iyi görme elde edilmiştir.' },
     ],
     not: 'Sağ gözde görme keskinliği 20/200 (0,1).',
     // Temsili Snellen eşeli: ekran boyutuna / VR çözünürlüğüne bağlı gerçek ölçüm DEĞİLDİR.
@@ -98,7 +98,7 @@ export const SAHNE_02 = {
     yanlisIpucu: 'Işığın hangi göze taşındığına ve o anda iki pupillanın birlikte nasıl değiştiğine yeniden bakın.',
     sonuc: [
       { tur: 'bulgu', metin: 'Sağ rölatif afferent pupilla defekti (RAPD) var.' },
-      { tur: 'egitici', metin: 'Sağ göz aydınlatıldığında afferent ışık girdisi daha zayıf olduğundan her iki pupillanın konstriksiyonu azalır.' },
+      { tur: 'egitici', metin: 'Sağ göz aydınlatıldığında afferent ışık girdisi daha zayıf olduğundan her iki pupillanın konstriksiyonu azalır. Efferent yol (okülomotor sinir) sağlam olduğu için pupilla çapı iki gözde eşit kalır (anizokori yoktur); fark, ışığın bir gözden diğerine taşındığı sallanan ışık testinde görülür. RAPD, tek taraflı ya da asimetrik optik sinir hastalığının en güvenilir nesnel bulgularından biridir; iki taraflı ve simetrik tutulumda saptanmaz.' },
     ],
     not: 'Sağ RAPD mevcut.',
     yonerge: 'Aynı şiddetteki ışığı gözler arasında taşıyın; her aydınlatmayı 2–3 saniye izleyin. Ortam loş, hasta uzağa bakıyor.',
@@ -108,7 +108,7 @@ export const SAHNE_02 = {
   fundus: {
     sonuc: [
       { tur: 'bulgu', metin: 'Sağ göz dibi doğal. Optik disk sınırları seçiliyor; disk ödemi izlenmiyor.' },
-      { tur: 'egitici', metin: 'Göz dibi muayenesinde optik sinirin başı görülür. Tutulum göz küresinin arkasındaki optik sinir segmentindeyse görme işlevi etkilenmesine rağmen disk başlangıçta doğal görünebilir.' },
+      { tur: 'egitici', metin: 'Göz dibi muayenesinde optik sinirin başı görülür. Tutulum göz küresinin arkasındaki optik sinir segmentindeyse görme işlevi etkilenmesine rağmen disk başlangıçta doğal görünebilir. Bu tablo retrobulber nörit olarak adlandırılır ve ON olgularının yaklaşık üçte ikisini oluşturur; geri kalanında papillit nedeniyle hafif disk ödemi görülür. Belirgin disk ödemi, peripapiller hemoraji veya eksüda atipik özelliklerdir ve ayırıcı tanıyı (iskemik, enfeksiyöz, infiltratif nedenler) genişletir. Tutulum sonrasında haftalar içinde optik atrofi (temporal solukluk) gelişebilir.' },
     ],
     not: 'Sağ göz dibi doğal.',
     // Projede kullanım izni belli bir normal fundus fotoğrafı bulunmadığından şema kullanılır.
@@ -129,7 +129,7 @@ export const SAHNE_02 = {
     bosMetin: 'Henüz bir başlık seçmediniz.',
     // Seçilmeyen başlıklar için sonuç açılmaz
     secilmeyenMetni: 'Planınıza almadığınız başlıklar için sonuç açılmadı.',
-    egitici: 'Nistagmus, bilateral dismetri ve alt ekstremitelerde canlı refleksler görsel yakınmanın ötesinde, optik sinir dışındaki merkezi sinir sistemi yollarının da tutulduğunu düşündürür. Bu bulgular lokalizasyonu ve sonraki değerlendirmeyi etkiler; tek başına etiyolojiyi belirlemez.',
+    egitici: 'Nistagmus, bilateral dismetri ve alt ekstremitelerde canlı refleksler görsel yakınmanın ötesinde, optik sinir dışındaki merkezi sinir sistemi yollarının da tutulduğunu düşündürür. Bu bulgular lokalizasyonu ve sonraki değerlendirmeyi etkiler; tek başına etiyolojiyi belirlemez. Serebellar yolların tutulumu (dismetri, nistagmus) ve piramidal bulgular (canlı refleksler) MS’te sık görülen klinik dışı ya da hafif ek bulgulardır; bunların varlığı, MRG’de optik sinir dışında lezyon bulunma olasılığını ve izole ON olmayıp çok odaklı bir hastalık düşünülmesi gerektiğini destekler. Eğitim açısından önemli olan, bulguyu önce anatomik olarak yerleştirmek, ardından etiyolojiyi tetkiklerle sorgulamaktır.',
     noroNotBas: 'Nörolojik muayene: ',
   },
 

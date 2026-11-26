@@ -42,7 +42,7 @@ export const SAHNE_01 = {
   sorular: [
     {
       id: 'baslangic',
-      teori: "Başlangıç zamanı ve sırası: akut (saat–gün), subakut (gün–hafta) ve kronik (ay–yıl) gelişen görme kayıpları farklı hastalık gruplarına işaret eder. Ağrının görme kaybından önce gelmesi ve yakınmanın tek gözde olması, ayırıcı tanıyı daraltan öykü ayrıntılarıdır. Kaydederken ilk belirtiyi ve görme değişikliğinin başlangıcını ayrı ayrı yazın.",
+      teori: "Başlangıç zamanı ve sırası: akut (saat–gün), subakut (gün–hafta) ve kronik (ay–yıl) gelişen görme kayıpları farklı hastalık gruplarına işaret eder. Optik nöritte (ON) görme kaybı tipik olarak saatler–günler içinde gelişir, ilk 1–2 hafta içinde en kötü düzeye ulaşır ve yaklaşık 3–4 hafta içinde düzelmeye başlar; çok daha hızlı (dakikalar) ya da aylarca süren ilerleyici kayıp başka nedenleri düşündürür. Çok ani, ağrısız ve damarsal risk etkenleriyle birlikte seyreden tek göz kaybı iskemik optik nöropatiyi, ardışık ağrısız iki göz kaybı genç erkekte Leber kalıtsal optik nöropatisini akla getirir. Ağrının görme kaybından önce gelmesi ve yakınmanın tek gözde olması ayırıcı tanıyı daraltır. Kaydederken ilk belirtiyi ve görme değişikliğinin başlangıcını ayrı ayrı yazın.",
       soru: 'Şikâyetiniz ne zaman ve nasıl başladı?',
       yanit: 'Bir hafta önce sağ gözümde ağrı başladı. Ertesi gün o gözümle bulanık görmeye başladım.',
       notlar: [
@@ -53,7 +53,7 @@ export const SAHNE_01 = {
     },
     {
       id: 'gorme',
-      teori: "Hastanın kendi tarifi (buğulu, bulanık, karanlık nokta, görme alanı kaybı, çift görme) etkilenen yapıyı ayırt etmeye yardım eder. Tek gözü kapatınca yakınma sürüyorsa sorun o gözdedir; çift görme ise tek göz kapatılınca genellikle düzelir. Tarif tek başına tanı koydurmaz; görme keskinliği, renk görme ve görme alanı muayenesiyle doğrulanır.",
+      teori: "Hastanın kendi tarifi (buğulu, bulanık, karanlık nokta, görme alanı kaybı, çift görme) etkilenen yapıyı ayırt etmeye yardım eder. Tek gözü kapatınca yakınma sürüyorsa sorun o gözdedir; çift görme ise tek göz kapatılınca genellikle düzelir. ON’de hastalar sıklıkla renklerin “soluk” görünmesinden (diskromatopsi, özellikle kırmızı desatürasyonu) ve görmenin bulanıklığından söz eder; renk kaybı görme keskinliği kaybına göre orantısız olabilir. Santral skotom en sık görülen alan defektidir, ancak yaygın ve altitudinal defektler de görülebilir. Tarif tek başına tanı koydurmaz; görme keskinliği, renk görme ve görme alanı muayenesiyle doğrulanır.",
       soru: 'Sağ gözünüzle nasıl gördüğünüzü tarif eder misiniz?',
       yanit: 'Sanki buğulu bir camın arkasından bakıyorum.',
       notlar: [
@@ -63,7 +63,7 @@ export const SAHNE_01 = {
     },
     {
       id: 'agri',
-      teori: "Göz hareketiyle artan periorbital ağrı tipik optik nöritte olguların yaklaşık %90’ında bulunur ve klinik ON ölçütünün bir bileşenidir. Ağrısız ya da çok şiddetli, uykudan uyandıran ağrı atipik bir özelliktir ve iskemik, kompresif veya NMOSD/MOGAD ilişkili nedenleri akla getirir.",
+      teori: "Göz hareketiyle artan periorbital ağrı tipik optik nöritte olguların yaklaşık %90’ında bulunur, çoğu kez görme kaybından önce ya da onunla birlikte başlar ve birkaç gün içinde azalır. Ağrının mekanizması, iltihaplı optik sinir kılıfının ve komşu ekstraoküler kas başlangıçlarının hareketle gerilmesiyle açıklanır. Klinik ON ölçütünün bir bileşenidir. Ağrısız ya da çok şiddetli, uykudan uyandıran ağrı atipik bir özelliktir ve iskemik, kompresif, enfeksiyöz/infiltratif veya NMOSD/MOGAD ilişkili nedenleri akla getirir.",
       soru: 'Ağrınız göz hareketleriyle değişiyor mu?',
       yanit: 'Evet, gözümü yanlara ya da yukarı çevirince artıyor; gözümün arkasında bir sızı gibi.',
       notlar: [
@@ -73,7 +73,7 @@ export const SAHNE_01 = {
     },
     {
       id: 'eslik',
-      teori: "Eşlik eden ya da geçmişte fark edilmemiş nörolojik yakınmalar (uyuşma, güçsüzlük, dengesizlik, Lhermitte belirtisi, sıcakla kötüleşme: Uhthoff fenomeni) çok odaklı bir süreci düşündürür. Hastalar hafif yakınmaları çoğu zaman önemsemez; bu nedenle tek tek sorulmalıdır.",
+      teori: "Eşlik eden ya da geçmişte fark edilmemiş nörolojik yakınmalar (uyuşma, güçsüzlük, dengesizlik, mesane işlevi, Lhermitte belirtisi, sıcakla kötüleşme: Uhthoff fenomeni) çok odaklı bir süreci düşündürür. Uhthoff fenomeni, vücut ısısı artınca demiyelinize aksonlarda iletinin geçici bozulmasına bağlıdır ve atak anlamına gelmez; Lhermitte belirtisi (boyun fleksiyonunda sırttan aşağı yayılan elektriklenme) servikal omurilik tutulumunu düşündürür. Hastalar hafif yakınmaları çoğu zaman önemsemez; bu nedenle tek tek sorulmalıdır. İzole ON ile başvuran hastalarda bile çoğu kez klinik dışı, MRG’de görülen başka lezyonlar bulunur.",
       soru: 'Uyuşma, güçsüzlük, dengesizlik ya da sıcakta kötüleşme gibi başka bir yakınmanız oldu mu?',
       yanit: 'Son iki üç aydır merdiven inerken biraz dengesiz hissediyorum, önemsemedim. Sıcak duştan sonra sağ gözüm biraz daha bulanıklaşıyor gibi.',
       notlar: [
@@ -84,7 +84,7 @@ export const SAHNE_01 = {
     },
     {
       id: 'onceki',
-      teori: "Önceki benzer epizodlar, olayın ilk mi yoksa tekrarlayan mı olduğunu gösterir. Geçmişte görme, duyu, güç veya denge ile ilgili geçici yakınmalar varsa çok odaklı bir hastalık düşünülebilir; bu nedenle hasta yalnız aynı yakınmayı değil, geçmiş geçici nörolojik yakınmaları da ayrıca sorgulanmalıdır.",
+      teori: "Önceki benzer epizodlar, olayın ilk mi yoksa tekrarlayan mı olduğunu gösterir. Geçmişte görme, duyu, güç veya denge ile ilgili geçici yakınmalar varsa çok odaklı bir hastalık düşünülebilir; bu nedenle hasta yalnız aynı yakınmayı değil, geçmiş geçici nörolojik yakınmaları da ayrıca sorgulanmalıdır. Zamanda yayılımın (dissemination in time) klinik karşılığı, en az 24 saat süren ve farklı zamanlarda ortaya çıkan ayrı ataklardır; klinik ON, MS’in ilk belirtisi olarak olguların yaklaşık beşte birinde, seyri sırasında ise yarıya yakınında görülür.",
       soru: 'Daha önce buna benzer bir şikâyetiniz oldu mu?',
       yanit: 'Hayır, ilk kez böyle bir şey yaşıyorum.',
       notlar: [
@@ -94,7 +94,7 @@ export const SAHNE_01 = {
     },
     {
       id: 'hastalik',
-      teori: "Bilinen hastalıklar (otoimmün, enfeksiyöz, damarsal, metabolik), ilaç kullanımı ve yakın zamanda geçirilmiş enfeksiyon veya aşı birlikte sorgulanır. Bilinen hastalığın olmaması nedeni dışlamaz; genç yaşta ilk atak olarak ortaya çıkan hastalıklar vardır.",
+      teori: "Bilinen hastalıklar (otoimmün, enfeksiyöz, damarsal, metabolik), ilaç kullanımı ve yakın zamanda geçirilmiş enfeksiyon veya aşı birlikte sorgulanır. Etambutol, amiodaron ve bazı kemoterapötikler toksik optik nöropatiye, B12 ve folat eksikliği beslenme kaynaklı optik nöropatiye yol açabilir; sarkoidoz, sifiliz, tüberküloz, Lyme ve sistemik lupus gibi hastalıklar ise inflamatuvar ya da enfeksiyöz optik nörite neden olur. Bilinen hastalığın olmaması nedeni dışlamaz; genç yaşta ilk atak olarak ortaya çıkan hastalıklar vardır.",
       soru: 'Bilinen bir hastalığınız var mı?',
       yanit: 'Hayır, bildiğim bir hastalığım yok.',
       notlar: [
@@ -104,7 +104,7 @@ export const SAHNE_01 = {
     },
     {
       id: 'aile',
-      teori: "Aile öyküsü, kalıtsal optik nöropatiler ve otoimmün hastalıklar açısından sorgulanır. Hastanın “bildiğim kadarıyla yok” demesi kesin bir dışlama değildir; aile öyküsü hastanın bilgisiyle sınırlıdır ve gerekirse yakınlarından teyit edilir.",
+      teori: "Aile öyküsü, kalıtsal optik nöropatiler (Leber kalıtsal optik nöropatisi, dominant optik atrofi) ve otoimmün hastalıklar açısından sorgulanır. Birinci derece akrabada MS bulunması hastanın riskini genel topluma göre birkaç kat artırır, ancak mutlak risk düşük kalır. Hastanın “bildiğim kadarıyla yok” demesi kesin bir dışlama değildir; aile öyküsü hastanın bilgisiyle sınırlıdır ve gerekirse yakınlarından teyit edilir.",
       soru: 'Ailenizde bildiğiniz ciddi bir kalıtsal hastalık var mı?',
       yanit: 'Bildiğim kadarıyla yok.',
       notlar: [
@@ -125,7 +125,7 @@ export const SAHNE_01 = {
         'Ön segment ve oküler nedenler: üveit, keratit, skleral inflamasyon, akut açı kapanması (ağrılı, kırmızı göz), kırma kusuru.',
         'Diğer: papilödem (genellikle iki taraflı), migren aurası (geçici).',
       ],
-      teori: 'Öykü ayırıcı tanıyı daraltır ama tanı koydurmaz. Sonraki sahnede görme keskinliği, renk görme, pupilla yanıtı, fundus ve göz hareketleri muayenesiyle bu listede ilerlenecektir; bulgular henüz verilmedi.',
+      teori: 'Öykü ayırıcı tanıyı daraltır ama tanı koydurmaz. Sonraki sahnede görme keskinliği, renk görme, pupilla yanıtı, fundus ve göz hareketleri muayenesiyle bu listede ilerlenecektir; bulgular henüz verilmedi. Tek taraflı ON’de beklenen temel bulgular görme keskinliği ve renk görme kaybı, rölatif afferent pupilla defekti ve — retrobulber tutulumda — çoğunlukla normal fundustur.',
       notlar: [],
     },
   ],
